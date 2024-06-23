@@ -14,65 +14,93 @@
             <h1>Yiuhung's Personal Blog</h1>
             <nav>
                 <ul>
-                    <li><a href="#home">Home</a></li>
+                    <li><a href="https://test.aiden-ng.top">Home</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#blog">Blog</a></li>
                     <li><a href="#contact">Contact</a></li>
+                    <li><a href="#trends">Tech Trends</a></li>
+                    <li><a href="#tools">Dev Tools</a></li>
+                    <li><a href="#projects">Projects</a></li>
+                    <li><a href="#resources">Resources</a></li>
+                    <li><a href="#subscribe">Subscribe</a></li>
+                    <li><a href="#analysis">Tech Analysis</a></li>
+                    <li><a href="#cases">User Cases</a></li>
+                    <li><a href="#news">Tech News</a></li>
                 </ul>
             </nav>
         </div>
     </header>
     
-    <section id="home" class="section-bg">
-        <div class="container">
-            <h2>Welcome to My Blog</h2>
-            <p>Hi, I'm Yiuhung. Welcome to my personal blog where I share my thoughts, experiences, and insights.</p>
-            <img src="images/welcome.jpeg" alt="Welcome Image" class="responsive-img">
-        </div>
-    </section>
-    
-    <section id="about" class="section-bg-alt">
-        <div class="container">
-            <h2>About Me</h2>
-            <p>I'm a passionate blogger and tech enthusiast. I love sharing knowledge and connecting with like-minded people.</p>
-            <img src="images/about.jpeg" alt="About Me Image" class="responsive-img">
-        </div>
-    </section>
-    
-    <section id="blog" class="section-bg">
-        <div class="container">
-            <h2>Blog Posts</h2>
-            <div class="card-grid">
-                <div class="card">
-                    <h3>First Blog Post</h3>
-                    <p>This is my first blog post. I'm excited to start this journey and share my experiences with you.</p>
-                </div>
-                <div class="card">
-                    <h3>Second Blog Post</h3>
-                    <p>In this post, I'll discuss some of my favorite programming languages and why I love them.</p>
-                </div>
-                <div class="card">
-                    <h3>Third Blog Post</h3>
-                    <p>Here's an update on my recent projects and what I've been working on lately.</p>
-                </div>
+    <main>
+        <section id="home" class="section-bg">
+            <div class="container">
+                <article>
+                    <h2>Welcome to My Blog</h2>
+                    <p>Hi, I'm Yiuhung. Welcome to my personal blog where I share my thoughts, experiences, and insights.</p>
+                    <img src="images/welcome.jpeg" alt="Welcome Image" class="responsive-img">
+                </article>
             </div>
-        </div>
-    </section>
-    
-    <section id="contact" class="section-bg-alt">
-        <div class="container">
-            <h2>Contact Me</h2>
-            <form id="contact-form">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-                <label for="message">Message:</label>
-                <textarea id="message" name="message" required></textarea>
-                <button type="submit">Send</button>
-            </form>
-        </div>
-    </section>
+        </section>
+        
+        <section id="about" class="section-bg-alt">
+            <div class="container">
+                <article>
+                    <h2>About Me</h2>
+                    <p>I'm a passionate blogger and tech enthusiast. I love sharing knowledge and connecting with like-minded people.</p>
+                    <img src="images/about.jpeg" alt="About Me Image" class="responsive-img">
+                </article>
+            </div>
+        </section>
+        
+        <section id="blog" class="section-bg">
+            <div class="container">
+                <article>
+                    <h2>Blog Posts</h2>
+                    <div class="card-grid">
+                        <div class="card">
+                            <h3>First Blog Post</h3>
+                            <p>This is my first blog post. I'm excited to start this journey and share my experiences with you.</p>
+                        </div>
+                        <div class="card">
+                            <h3>Second Blog Post</h3>
+                            <p>In this post, I'll discuss some of my favorite programming languages and why I love them.</p>
+                        </div>
+                        <div class="card">
+                            <h3>Third Blog Post</h3>
+                            <p>Here's an update on my recent projects and what I've been working on lately.</p>
+                        </div>
+                        <!-- Add more blog posts dynamically -->
+                    </div>
+                </article>
+            </div>
+        </section>
+        
+        <section id="contact" class="section-bg-alt">
+            <div class="container">
+                <article>
+                    <h2>Contact Me</h2>
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message:</label>
+                            <textarea id="message" name="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit">Send</button>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <!-- Additional sections like trends, tools, projects, resources, subscribe, analysis, cases, and news -->
+
+    </main>
     
     <footer>
         <div class="container">
