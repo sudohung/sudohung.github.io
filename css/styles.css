@@ -1,6 +1,6 @@
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
     margin: 0;
     padding: 0;
     color: #333;
@@ -13,92 +13,104 @@ body {
 }
 
 header {
-    background-color: #333;
+    background: linear-gradient(135deg, #ff6f61, #d74d60);
     color: white;
-    padding: 10px 0;
+    padding: 20px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 header h1 {
     margin: 0;
+    font-size: 2.5rem;
+    text-align: center;
 }
 
 nav ul {
     list-style-type: none;
     padding: 0;
+    text-align: center;
 }
 
 nav ul li {
-    display: inline;
-    margin: 0 10px;
+    display: inline-block;
+    margin: 0 15px;
 }
 
 nav ul li a {
     color: white;
     text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 3px;
+    padding: 10px 15px;
+    border-radius: 20px;
     transition: background-color 0.3s;
 }
 
 nav ul li a:hover {
-    background-color: #555;
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 section {
-    padding: 20px 0;
+    padding: 40px 0;
     border-bottom: 1px solid #ccc;
     background-color: white;
     margin-bottom: 20px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
 }
 
 footer {
-    background-color: #333;
+    background: linear-gradient(135deg, #ff6f61, #d74d60);
     color: white;
     text-align: center;
-    padding: 10px 0;
-    position: fixed;
+    padding: 20px 0;
+    position: relative;
     width: 100%;
     bottom: 0;
 }
 
 h2 {
-    border-bottom: 2px solid #333;
+    border-bottom: 2px solid #ff6f61;
     padding-bottom: 5px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 2rem;
 }
 
 #contact-form {
     display: flex;
     flex-direction: column;
+    align-items: center;
 }
 
 #contact-form label {
     margin-top: 10px;
+    font-size: 1.2rem;
 }
 
 #contact-form input, #contact-form textarea {
-    padding: 10px;
-    margin-top: 5px;
+    padding: 15px;
+    margin-top: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     width: 100%;
     max-width: 500px;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 #contact-form button {
-    padding: 10px;
-    background-color: #333;
+    padding: 15px 30px;
+    background-color: #ff6f61;
     color: white;
     border: none;
-    border-radius: 5px;
-    margin-top: 10px;
+    border-radius: 25px;
+    margin-top: 20px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 1rem;
+    transition: background-color 0.3s, transform 0.3s;
 }
 
 #contact-form button:hover {
-    background-color: #555;
+    background-color: #d74d60;
+    transform: translateY(-3px);
 }
 
 /* Responsive Design */
@@ -127,5 +139,6 @@ h2 {
     width: 100%;
     height: auto;
     margin: 20px 0;
-    border-radius: 5px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
