@@ -1,6 +1,9 @@
+/* Importing Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
 /* General Styles */
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     color: #333;
@@ -17,22 +20,23 @@ header {
     color: white;
     padding: 20px 0;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
 }
 
 header h1 {
     margin: 0;
     font-size: 2.5rem;
-    text-align: center;
 }
 
 nav ul {
     list-style-type: none;
     padding: 0;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 nav ul li {
-    display: inline-block;
     margin: 0 15px;
 }
 
@@ -50,11 +54,18 @@ nav ul li a:hover {
 
 section {
     padding: 40px 0;
-    border-bottom: 1px solid #ccc;
-    background-color: white;
     margin-bottom: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
     border-radius: 10px;
+    text-align: center;
+}
+
+.section-bg {
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.section-bg-alt {
+    background-color: #f4f4f4;
 }
 
 footer {
@@ -72,6 +83,20 @@ h2 {
     padding-bottom: 5px;
     margin-bottom: 20px;
     font-size: 2rem;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin: 20px 0;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
 #contact-form {
@@ -119,10 +144,12 @@ h2 {
         width: 90%;
     }
 
+    nav ul {
+        flex-direction: column;
+    }
+
     nav ul li {
-        display: block;
         margin: 10px 0;
-        text-align: center;
     }
 
     section {
