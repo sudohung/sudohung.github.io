@@ -3,10 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Yiuhung's Personal Blog - Sharing thoughts, experiences, and insights on technology, programming, and more.">
+    <meta name="keywords" content="Yiuhung, personal blog, technology, programming, tech trends, development tools">
+    <meta name="author" content="Yiuhung">
     <title>Yiuhung's Personal Blog</title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Yiuhung",
+        "url": "http://www.example.com",
+        "sameAs": [
+            "http://www.facebook.com/your-profile",
+            "http://www.twitter.com/yourProfile",
+            "http://www.instagram.com/yourProfile",
+            "http://www.linkedin.com/in/yourprofile"
+        ],
+        "jobTitle": "Blogger",
+        "worksFor": {
+            "@type": "Organization",
+            "name": "Yiuhung's Blog"
+        }
+    }
+    </script>
 </head>
 <body>
     <header>
@@ -14,16 +36,20 @@
             <h1>Yiuhung's Personal Blog</h1>
             <nav>
                 <ul>
-                    <li><a href="https://test.aiden-ng.top">Home</a></li>
+                    <li><a href="#home">Home</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#blog">Blog</a></li>
                     <li><a href="#contact">Contact</a></li>
+                    <li><a href="#trends">Tech Trends</a></li>
                     <li><a href="#tools">Dev Tools</a></li>
                     <li><a href="#projects">Projects</a></li>
                     <li><a href="#resources">Resources</a></li>
                     <li><a href="#subscribe">Subscribe</a></li>
+                    <li><a href="#analysis">Tech Analysis</a></li>
+                    <li><a href="#cases">User Cases</a></li>
                     <li><a href="#news">Tech News</a></li>
                 </ul>
+                <button class="menu-toggle"><i class="fas fa-bars"></i></button>
             </nav>
         </div>
     </header>
@@ -31,72 +57,116 @@
     <main>
         <section id="home" class="section-bg">
             <div class="container">
-                <article>
-                    <h2>Welcome to My Blog</h2>
-                    <p>Hi, I'm Yiuhung. Welcome to my personal blog where I share my thoughts, experiences, and insights.</p>
-                    <img src="images/welcome.jpeg" alt="Welcome Image" class="responsive-img">
-                </article>
+                <h2>Welcome to My Blog</h2>
+                <p>Hi, I'm Yiuhung. Welcome to my personal blog where I share my thoughts, experiences, and insights.</p>
+                <img src="images/welcome.jpeg" alt="Welcome to Yiuhung's Personal Blog" class="responsive-img">
             </div>
         </section>
         
         <section id="about" class="section-bg-alt">
             <div class="container">
-                <article>
-                    <h2>About Me</h2>
-                    <p>I'm a passionate blogger and tech enthusiast. I love sharing knowledge and connecting with like-minded people.</p>
-                    <img src="images/about.jpeg" alt="About Me Image" class="responsive-img">
-                </article>
+                <h2>About Me</h2>
+                <p>I'm a passionate blogger and tech enthusiast. I love sharing knowledge and connecting with like-minded people.</p>
+                <img src="images/about.jpeg" alt="About Yiuhung" class="responsive-img">
             </div>
         </section>
         
         <section id="blog" class="section-bg">
             <div class="container">
-                <article>
-                    <h2>Blog Posts</h2>
-                    <div class="card-grid">
-                        <div class="card">
-                            <h3>First Blog Post</h3>
-                            <p>This is my first blog post. I'm excited to start this journey and share my experiences with you.</p>
-                        </div>
-                        <div class="card">
-                            <h3>Second Blog Post</h3>
-                            <p>In this post, I'll discuss some of my favorite programming languages and why I love them.</p>
-                        </div>
-                        <div class="card">
-                            <h3>Third Blog Post</h3>
-                            <p>Here's an update on my recent projects and what I've been working on lately.</p>
-                        </div>
-                        <!-- Add more blog posts dynamically -->
+                <h2>Blog Posts</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>First Blog Post</h3>
+                        <p>This is my first blog post. I'm excited to start this journey and share my experiences with you.</p>
                     </div>
-                </article>
+                    <div class="card">
+                        <h3>Second Blog Post</h3>
+                        <p>In this post, I'll discuss some of my favorite programming languages and why I love them.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Third Blog Post</h3>
+                        <p>Here's an update on my recent projects and what I've been working on lately.</p>
+                    </div>
+                </div>
             </div>
         </section>
         
         <section id="contact" class="section-bg-alt">
             <div class="container">
-                <article>
-                    <h2>Contact Me</h2>
-                    <form id="contact-form">
-                        <div class="form-group">
-                            <label for="name">Name:</label>
-                            <input type="text" id="name" name="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="message">Message:</label>
-                            <textarea id="message" name="message" rows="5" required></textarea>
-                        </div>
-                        <button type="submit">Send</button>
-                    </form>
-                </article>
+                <h2>Contact Me</h2>
+                <form id="contact-form">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message:</label>
+                        <textarea id="message" name="message" rows="5" required></textarea>
+                    </div>
+                    <button type="submit">Send</button>
+                </form>
             </div>
         </section>
 
-        <!-- Additional sections like trends, tools, projects, resources, subscribe, analysis, cases, and news -->
+        <section id="trends" class="section-bg">
+            <div class="container">
+                <h2>Tech Trends</h2>
+                <p>Stay updated with the latest technology trends and innovations.</p>
+            </div>
+        </section>
 
+        <section id="tools" class="section-bg-alt">
+            <div class="container">
+                <h2>Dev Tools</h2>
+                <p>Discover essential tools and software for developers.</p>
+            </div>
+        </section>
+
+        <section id="projects" class="section-bg">
+            <div class="container">
+                <h2>Projects</h2>
+                <p>Explore my recent projects and their development process.</p>
+            </div>
+        </section>
+
+        <section id="resources" class="section-bg-alt">
+            <div class="container">
+                <h2>Resources</h2>
+                <p>Handpicked resources to enhance your development skills.</p>
+            </div>
+        </section>
+
+        <section id="subscribe" class="section-bg">
+            <div class="container">
+                <h2>Subscribe</h2>
+                <p>Stay connected! Subscribe to receive updates and exclusive content.</p>
+            </div>
+        </section>
+
+        <section id="analysis" class="section-bg-alt">
+            <div class="container">
+                <h2>Tech Analysis</h2>
+                <p>In-depth analysis of technology trends and their impact.</p>
+            </div>
+        </section>
+
+        <section id="cases" class="section-bg">
+            <div class="container">
+                <h2>User Cases</h2>
+                <p>Real-life user cases and success stories.</p>
+            </div>
+        </section>
+
+        <section id="news" class="section-bg-alt">
+            <div class="container">
+                <h2>Tech News</h2>
+                <p>Latest news and updates from the tech industry.</p>
+            </div>
+        </section>
     </main>
     
     <footer>
@@ -111,6 +181,10 @@
         </div>
     </footer>
     
-    <script src="js/script.js"></script>
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', () => {
+            document.querySelector('nav ul').classList.toggle('showing');
+        });
+    </script>
 </body>
 </html>
