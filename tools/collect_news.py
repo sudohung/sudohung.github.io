@@ -69,6 +69,8 @@ ul.news li:last-child{border-bottom:0}
 ul.news .t{font-size:.78em;color:#999;margin-left:6px}
 .crumb{margin-bottom:16px;font-size:.9em}
 .empty{color:#999;text-align:center;padding:30px 0}
+.card.hl{border-left:4px solid var(--accent);background:linear-gradient(0deg,#fffdfb,#fff)}
+.hl-intro{color:#555;font-size:.95em;line-height:1.65;margin:0 0 8px}
 .date-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
 .date-list a{display:block;background:#fff;border-radius:8px;padding:16px;box-shadow:0 3px 8px rgba(0,0,0,.08);color:#333}
 .date-list a span{color:#999;font-size:.8em;display:block}
@@ -204,8 +206,38 @@ def collect(sources):
     return result
 
 
-def render_snapshot(date_str, time_str, sections, label="资讯快报"):
-    parts = []
+def pick_highlights(sections, max_n=6):
+    """跨源摘选重点：每个来源取首条，作为整体重点速览。"""
+    picks = []
+    for sec in sections:
+        if sec.get("items"):
+            it = sec["items"][0]
+            picks.append({"title": it["title"], "link": it["link"], "source": sec["name"]})
+    return picks[:max_n]
+
+
+def _highlight_html(picks, intro):
+    if not picks:
+        return ""
+    lis = "".join(
+        f'<li><a href="{html.escape(p["link"], quote=True)}" target="_blank" rel="noreferrer">'
+        f'{html.escape(p["title"])}</a> <span class="t">· {html.escape(p["source"])}</span></li>'
+        for p in picks
+    )
+    return (
+        f'<div class="card hl"><h2>📌 重点速览</h2>'
+        f'<p class="hl-intro">{html.escape(intro)}</p>'
+        f'<ul class="news">{lis}</ul></div>'
+    )
+
+
+def render_snapshot(date_str, time_str, sections, label="资讯快报", picks=None, total=None):
+    if total is None:
+        total = sum(len(s["items"]) for s in sections)
+    if picks is None:
+        picks = pick_highlights(sections)
+    intro = f"本期共采集 {total} 条资讯，来自 {len(sections)} 个来源。以下为重点："
+    parts = [_highlight_html(picks, intro)]
     for sec in sections:
         lis = "".join(
             f'<li><a href="{html.escape(i["link"], quote=True)}" target="_blank" rel="noreferrer">'
@@ -218,7 +250,7 @@ def render_snapshot(date_str, time_str, sections, label="资讯快报"):
         )
     if not parts:
         parts.append('<div class="card empty">本次未采集到资讯（新闻源暂不可用）。</div>')
-    body = "\n".join(parts)
+    body = "\n".join(p for p in parts if p)
     return PAGE_TPL.format(
         title=f"{label} · {date_str} {time_str}",
         style=STYLE,
@@ -230,17 +262,21 @@ def render_snapshot(date_str, time_str, sections, label="资讯快报"):
     )
 
 
-def render_day(date_str, snaps):
+def render_day(date_str, snaps, picks=None, total_items=0):
+    picks = picks or []
+    intro = f"当日共 {len(snaps)} 次采集、约 {total_items} 条资讯。以下为当日重点："
+    hl = _highlight_html(picks, intro)
     links = "".join(
         f'<div class="card"><a href="{s}.html">🕒 {s[:2]}:{s[2:]} 快照</a></div>' for s in snaps
     ) or '<div class="card empty">当日暂无快照。</div>'
+    body = (hl + "\n" + links).strip()
     return PAGE_TPL.format(
         title=f"资讯 · {date_str}",
         style=STYLE,
         h1=f"{date_str} 资讯",
-        meta=f"共 {len(snaps)} 份快照",
+        meta=f"共 {len(snaps)} 次采集",
         crumb='<div class="crumb"><a href="../">← 全部日期</a></div>',
-        body=links,
+        body=body,
         year=date_str[:4],
     )
 
@@ -277,7 +313,25 @@ def rebuild_indexes(news_dir):
         snaps = sorted(
             f[:-5] for f in os.listdir(dd) if re.match(r"^\d{4}\.html$", f)
         )
-        write(os.path.join(dd, "index.html"), render_day(d, snaps))
+        # 汇总当日重点（读取各快照 JSON 侧车，最新优先去重）
+        day_picks, seen, total_items = [], set(), 0
+        for stem in sorted(snaps, reverse=True):
+            jp = os.path.join(dd, stem + ".json")
+            if not os.path.exists(jp):
+                continue
+            try:
+                with open(jp, encoding="utf-8") as fh:
+                    obj = json.load(fh)
+            except Exception:
+                continue
+            total_items += int(obj.get("total") or 0)
+            for p in obj.get("highlights") or []:
+                key = p.get("link")
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                day_picks.append(p)
+        write(os.path.join(dd, "index.html"), render_day(d, snaps, day_picks[:8], total_items))
     return dates
 
 
@@ -319,12 +373,24 @@ def main():
     print(f"collecting for {date_str} {time_str} (focus={args.focus}) ...")
     sections = collect(sources)
     total = sum(len(s["items"]) for s in sections)
+    picks = pick_highlights(sections)
     print(f"collected {total} items from {len(sections)} sources")
 
-    write(os.path.join(news_dir, date_str, f"{time_str}.html"),
-          render_snapshot(date_str, time_str, sections, label))
+    snap_dir = os.path.join(news_dir, date_str)
+    write(os.path.join(snap_dir, f"{time_str}.html"),
+          render_snapshot(date_str, time_str, sections, label, picks, total))
+    snapshot_meta = {
+        "date": date_str,
+        "time": time_str,
+        "label": label,
+        "total": total,
+        "sources": [s["name"] for s in sections],
+        "highlights": picks,
+    }
+    write(os.path.join(snap_dir, f"{time_str}.json"),
+          json.dumps(snapshot_meta, ensure_ascii=False, indent=2))
     rebuild_indexes(news_dir)
-    print(f"wrote news/{date_str}/{time_str}.html and indexes")
+    print(f"wrote news/{date_str}/{time_str}.html (+ .json) and indexes")
 
     if args.push:
         git_commit_push(args.repo, date_str, time_str)
