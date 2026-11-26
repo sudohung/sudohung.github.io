@@ -262,19 +262,41 @@ def render_snapshot(date_str, time_str, sections, label="资讯快报", picks=No
     )
 
 
-def render_day(date_str, snaps, picks=None, total_items=0):
+def summarize_obj(obj):
+    """根据快照 JSON 生成一段内容摘要（条数/来源 + 重点标题）。"""
+    parts = []
+    if obj.get("total"):
+        parts.append(f"本次采集 {obj['total']} 条")
+    if obj.get("sources"):
+        parts.append(f"来源 {len(obj['sources'])} 个")
+    head = "，".join(parts)
+    titles = [p.get("title") for p in (obj.get("highlights") or [])[:4] if p.get("title")]
+    if titles:
+        return (head + "。重点：" if head else "重点：") + "；".join(titles) + "。"
+    return (head + "。") if head else ""
+
+
+def render_day(date_str, entries, picks=None, total_items=0):
     picks = picks or []
-    intro = f"当日共 {len(snaps)} 次采集、约 {total_items} 条资讯。以下为当日重点："
+    intro = f"当日共 {len(entries)} 次采集、约 {total_items} 条资讯。以下为当日重点："
     hl = _highlight_html(picks, intro)
-    links = "".join(
-        f'<div class="card"><a href="{s}.html">🕒 {s[:2]}:{s[2:]} 快照</a></div>' for s in snaps
-    ) or '<div class="card empty">当日暂无快照。</div>'
-    body = (hl + "\n" + links).strip()
+    cards = []
+    for e in entries:
+        tag = f'<span class="tag">{html.escape(e["tag"])}</span>' if e.get("tag") else ""
+        summary = e.get("summary") or ""
+        para = (f'<p class="hl-intro">{html.escape(summary)}</p>' if summary
+                else '<p class="hl-intro">（暂无摘要）</p>')
+        cards.append(
+            f'<div class="card"><h2>🕒 {e["time_fmt"]} {tag}</h2>'
+            f'{para}'
+            f'<p><a href="{e["stem"]}.html">查看完整快照 →</a></p></div>'
+        )
+    body = (hl + "\n" + ("".join(cards) or '<div class="card empty">当日暂无快照。</div>')).strip()
     return PAGE_TPL.format(
         title=f"资讯 · {date_str}",
         style=STYLE,
         h1=f"{date_str} 资讯",
-        meta=f"共 {len(snaps)} 次采集",
+        meta=f"共 {len(entries)} 次采集",
         crumb='<div class="crumb"><a href="../">← 全部日期</a></div>',
         body=body,
         year=date_str[:4],
@@ -310,36 +332,45 @@ def rebuild_indexes(news_dir):
     write(os.path.join(news_dir, "index.html"), render_index(dates))
     for d in dates:
         dd = os.path.join(news_dir, d)
-        snaps = sorted(
-            f[:-5] for f in os.listdir(dd) if re.match(r"^\d{4}\.html$", f)
+        stems = sorted(
+            (f[:-5] for f in os.listdir(dd) if re.match(r"^\d{4}\.html$", f)),
+            reverse=True,
         )
-        # 汇总当日重点（读取各快照 JSON 侧车，最新优先去重）
-        day_picks, seen, total_items = [], set(), 0
-        for stem in sorted(snaps, reverse=True):
+        entries, day_picks, seen, total_items = [], [], set(), 0
+        for stem in stems:
             jp = os.path.join(dd, stem + ".json")
-            if not os.path.exists(jp):
-                continue
-            try:
-                with open(jp, encoding="utf-8") as fh:
-                    obj = json.load(fh)
-            except Exception:
-                continue
-            total_items += int(obj.get("total") or 0)
+            obj = {}
+            if os.path.exists(jp):
+                try:
+                    with open(jp, encoding="utf-8") as fh:
+                        obj = json.load(fh)
+                except Exception:
+                    obj = {}
+            if obj.get("total"):
+                total_items += int(obj["total"])
             for p in obj.get("highlights") or []:
                 key = p.get("link")
-                if not key or key in seen:
-                    continue
-                seen.add(key)
-                day_picks.append(p)
-        write(os.path.join(dd, "index.html"), render_day(d, snaps, day_picks[:8], total_items))
+                if key and key not in seen:
+                    seen.add(key)
+                    day_picks.append(p)
+            label = obj.get("label") or ""
+            time_str = obj.get("time") or stem
+            entries.append({
+                "stem": stem,
+                "time_fmt": f"{time_str[:2]}:{time_str[2:]}",
+                "tag": ("海外" if "海外" in label else ("综合" if label else "")),
+                "summary": summarize_obj(obj),
+            })
+        write(os.path.join(dd, "index.html"), render_day(d, entries, day_picks[:8], total_items))
     return dates
 
 
-def git_commit_push(repo, date_str, time_str):
+def git_commit_push(repo, date_str, time_str, msg=None):
     env = dict(os.environ)
+    commit_msg = msg or f"feat(资讯采集)：新增 {date_str} {time_str[:2]}:{time_str[2:]} 资讯快照"
     cmds = [
         ["git", "-C", repo, "add", "news"],
-        ["git", "-C", repo, "commit", "-m", f"feat(资讯采集)：新增 {date_str} {time_str[:2]}:{time_str[2:]} 资讯快照"],
+        ["git", "-C", repo, "commit", "-m", commit_msg],
         ["git", "-C", repo, "push", "origin", "HEAD"],
     ]
     for c in cmds:
@@ -360,12 +391,22 @@ def main():
     ap.add_argument("--push", action="store_true")
     ap.add_argument("--focus", choices=["all", "foreign"], default="all",
                     help="all=中英混合(默认)；foreign=仅海外 IT/科技热点")
+    ap.add_argument("--rebuild-only", action="store_true",
+                    help="不采集，仅根据已有快照/JSON 重建索引页")
     args = ap.parse_args()
 
     now = datetime.now(CST)
     date_str = now.strftime("%Y-%m-%d")
     time_str = now.strftime("%H%M")
     news_dir = os.path.join(args.repo, "news")
+
+    if args.rebuild_only:
+        rebuild_indexes(news_dir)
+        print("rebuilt indexes (rebuild-only)")
+        if args.push:
+            git_commit_push(args.repo, date_str, time_str,
+                            msg="feat(资讯索引)：重建资讯索引页（含每次快照摘要）")
+        return
 
     sources = FOREIGN_SOURCES if args.focus == "foreign" else SOURCES
     label = "海外科技资讯快报" if args.focus == "foreign" else "资讯快报"
