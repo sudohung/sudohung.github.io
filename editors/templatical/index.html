@@ -20,6 +20,30 @@
       .actions button.ghost { background: rgba(255,255,255,.14); }
       .actions a { color: #b9a9ff; text-decoration: none; }
     </style>
+    <script>
+      /*
+       * 静态托管兜底（GitHub Pages 无后端）：
+       * Templatical 启动时会先 await fetch("/mailchimp/api/accounts").json() 再挂载编辑器，
+       * 静态站点该接口 404 返回 HTML，.json() 抛错会导致编辑器初始化整体中断（白屏）。
+       * 这里仅为该只读启动接口提供空账号回退，保证编辑器能渲染默认内容；其余接口保持原样。
+       */
+      (function () {
+        var _fetch = window.fetch ? window.fetch.bind(window) : null;
+        window.fetch = function (input, init) {
+          try {
+            var url = typeof input === "string" ? input : (input && input.url) || "";
+            var method = ((init && init.method) || (input && input.method) || "GET").toUpperCase();
+            if (method === "GET" && /\/mailchimp\/api\/accounts(\?|$)/.test(url)) {
+              return Promise.resolve(new Response(JSON.stringify({ accounts: [] }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" }
+              }));
+            }
+          } catch (e) {}
+          return _fetch ? _fetch(input, init) : Promise.reject(new Error("fetch unavailable"));
+        };
+      })();
+    </script>
     <script type="module" crossorigin src="/editors/templatical/assets/index-Csx8wBLZ.js"></script>
     <link rel="stylesheet" crossorigin href="/editors/templatical/assets/index-DTPwbgBQ.css">
     <link rel="stylesheet" href="/editors/templatical/resource-library.css">
