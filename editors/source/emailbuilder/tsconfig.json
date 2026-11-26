@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "strict": false,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "exclude": ["dist", "node_modules"]
+}

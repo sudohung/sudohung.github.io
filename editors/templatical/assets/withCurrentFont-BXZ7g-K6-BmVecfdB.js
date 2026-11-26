@@ -1,0 +1,1 @@
+import{cD as i,cE as s}from"./index-Csx8wBLZ.js";function f(e){return e&&i(e).length>0?e:""}function m(e,t){let a=f(t);if(a===""||e.some(o=>o.value===a))return e;let r=s(a),l=r.toLowerCase(),n=e.findIndex(o=>o.label.toLowerCase()===l||o.value.toLowerCase()===l);return n===-1?[{value:a,label:r},...e]:e.map((o,u)=>u===n?{...o,value:a}:o)}export{f as n,m as r};

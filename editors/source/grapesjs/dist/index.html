@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>GrapesJS + MJML · Mailchimp 模板编辑器</title>
+    <style>
+      html, body { margin: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; }
+      #toolbar { height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #101828; color: #fff; box-sizing: border-box; }
+      #toolbar .brand { font-weight: 700; margin-right: 10px; }
+      #toolbar button { height: 30px; padding: 0 12px; border: 1px solid rgba(255,255,255,.25); border-radius: 6px; background: rgba(255,255,255,.1); color: #fff; font-size: 12px; cursor: pointer; }
+      #toolbar button:hover { background: rgba(255,255,255,.2); }
+      #status { margin-left: auto; font-size: 11px; color: #d0d5dd; }
+      #gjs { height: calc(100vh - 52px); }
+      .gjs-one-bg { background-color: #f8f8f8; }
+    </style>
+    <script type="module" crossorigin src="/mailchimp/grapesjs/assets/index-BK41c6bh.js"></script>
+    <link rel="stylesheet" crossorigin href="/mailchimp/grapesjs/assets/index-kcEUIu4-.css">
+  </head>
+  <body>
+    <div id="toolbar">
+      <span class="brand">GrapesJS + MJML</span>
+      <button id="btn-export-mjml" type="button">导出 MJML</button>
+      <button id="btn-export-html" type="button">导出 HTML</button>
+      <button id="btn-library" type="button">资源库</button>
+      <button id="btn-save-mc" type="button">保存为 Mailchimp 模板</button>
+      <span id="status">初始化中…</span>
+    </div>
+    <div id="gjs">
+      <mjml>
+        <mj-body background-color="#f4f0e6">
+          <mj-section background-color="#000000" padding="36px 24px">
+            <mj-column>
+              <mj-text color="#ffffff" font-size="30px" font-weight="700" align="center">
+                GrapesJS + MJML
+              </mj-text>
+              <mj-text color="#c9c9c9" font-size="13px" align="center">
+                Mailchimp Email Editor Sample
+              </mj-text>
+            </mj-column>
+          </mj-section>
+          <mj-section background-color="#ffffff" padding="28px 32px">
+            <mj-column>
+              <mj-text font-size="20px" font-weight="700" color="#111111">
+                在样例中体验 MJML 双向编辑
+              </mj-text>
+              <mj-text font-size="15px" line-height="1.6" color="#333333">
+                左侧是 GrapesJS 组件面板，中间是画布，右侧是属性面板。导出时直接生成 MJML 或编译后的 HTML。
+              </mj-text>
+              <mj-button background-color="#7c5cff" color="#ffffff" border-radius="6px" href="https://www.xiaopeng.com">
+                了解详情
+              </mj-button>
+            </mj-column>
+          </mj-section>
+          <mj-section background-color="#0a0a0a" padding="24px">
+            <mj-column>
+              <mj-text color="#ffffff" font-size="12px" align="center">XPENG | Xperience the future. Today.</mj-text>
+            </mj-column>
+          </mj-section>
+        </mj-body>
+      </mjml>
+    </div>
+    <style>
+  .lib-back { position: fixed; inset: 0; z-index: 9999; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(16,24,40,.55); }
+  .lib-back.is-open { display: flex; }
+  .lib-panel { width: min(900px, 100%); max-height: 86vh; display: flex; flex-direction: column; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 70px rgba(16,24,40,.28); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; }
+  .lib-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px 10px; border-bottom: 1px solid #eaecf0; }
+  .lib-head h3 { margin: 0 0 4px; font-size: 17px; color: #101828; }
+  .lib-head p { margin: 0; font-size: 12px; color: #667085; }
+  .lib-close { width: 28px; height: 28px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; cursor: pointer; }
+  .lib-status { padding: 8px 20px 0; font-size: 11px; color: #667085; }
+  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; padding: 12px 20px 20px; overflow-y: auto; }
+  .lib-card { border: 1px solid #eaecf0; border-radius: 10px; background: #fff; padding: 7px; cursor: pointer; text-align: left; }
+  .lib-card:hover { border-color: #7c5cff; box-shadow: 0 6px 18px rgba(16,24,40,.08); }
+  .lib-thumb { display: block; aspect-ratio: 16/9; overflow: hidden; border-radius: 6px; background: #f2f4f7; }
+  .lib-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lib-name { display: block; margin-top: 6px; font-size: 11.5px; color: #344054; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+  </body>
+</html>

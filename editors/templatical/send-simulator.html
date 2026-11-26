@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <title>Templatical · 发送模拟</title>
+    <link rel="stylesheet" href="/mailchimp/templatical/send-simulator.css" />
+  </head>
+  <body>
+    <header class="ss-header">
+      <div class="ss-brand">
+        <div class="ss-title">Templatical · 发送模拟</div>
+        <div class="ss-subtitle">
+          选择已保存记录 → 填充变量 → 渲染 → 模拟发送（只展示最终 HTML，不会真实投递）
+        </div>
+      </div>
+      <div class="ss-header-actions">
+        <span class="ss-sim-badge">SIMULATED · 不真实投递</span>
+        <a href="/mailchimp/templatical/" target="_blank" rel="noreferrer">返回编辑器</a>
+        <a href="/mailchimp/" target="_blank" rel="noreferrer">样例首页</a>
+      </div>
+    </header>
+
+    <main class="ss-main">
+      <aside class="ss-list-panel">
+        <div class="ss-list-toolbar">
+          <div class="ss-tabs" role="tablist">
+            <button type="button" class="ss-tab" data-source="snapshot">模板快照</button>
+            <button type="button" class="ss-tab" data-source="draft">纯草稿</button>
+          </div>
+          <button type="button" class="ss-refresh" id="ss-refresh">刷新</button>
+        </div>
+        <div class="ss-list" id="ss-list"></div>
+        <div class="ss-list-foot">
+          只有保存了 <code>token_html</code> 的记录可以发送；旧记录请先在编辑器里重新保存一次。
+        </div>
+      </aside>
+
+      <section class="ss-workspace">
+        <div class="ss-empty" id="ss-empty">
+          <div class="ss-empty-title">请选择左侧记录</div>
+          <div class="ss-empty-desc">选择模板快照或纯草稿后，在这里填写变量值、渲染并模拟发送。</div>
+        </div>
+
+        <div class="ss-content" id="ss-content" hidden>
+          <div class="ss-selected">
+            <div class="ss-selected-main">
+              <div class="ss-name" id="ss-name">—</div>
+              <div class="ss-meta" id="ss-meta"></div>
+            </div>
+            <div class="ss-badges" id="ss-badges"></div>
+          </div>
+
+          <section class="ss-card">
+            <div class="ss-card-head">
+              <div>
+                <h2>变量值</h2>
+                <p>这些值只在本次模拟发送中使用。</p>
+              </div>
+              <button type="button" class="ss-btn ghost" id="ss-fill">用示例值填充</button>
+            </div>
+            <div class="ss-form" id="ss-form"></div>
+            <div class="ss-warning" id="ss-warning" hidden></div>
+            <div class="ss-actions">
+              <button type="button" class="ss-btn" id="ss-render">渲染预览</button>
+              <button type="button" class="ss-btn primary" id="ss-send">模拟发送</button>
+              <span class="ss-actions-note">发送不会调用 Mailchimp / 邮件供应商</span>
+            </div>
+            <div class="ss-status" id="ss-status"></div>
+          </section>
+
+          <section class="ss-result" id="ss-result" hidden>
+            <div class="ss-result-head">
+              <div class="ss-result-tabs">
+                <button type="button" class="ss-result-tab" data-tab="preview">最终预览</button>
+                <button type="button" class="ss-result-tab" data-tab="html">HTML 源码</button>
+              </div>
+              <div class="ss-send-info" id="ss-send-info"></div>
+            </div>
+            <iframe
+              class="ss-frame"
+              id="ss-frame"
+              title="最终邮件预览"
+              sandbox="allow-same-origin"
+            ></iframe>
+            <pre class="ss-html" id="ss-html" hidden></pre>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="/mailchimp/templatical/send-simulator.js" defer></script>
+  </body>
+</html>

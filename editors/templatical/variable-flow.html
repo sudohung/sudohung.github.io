@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
+<title>Templatical 变量锚点 · 编辑与数据流转</title>
+<style>
+  :root{
+    --ink:#101828; --muted:#667085; --line:#d9d2c6; --paper:#f6f3ea;
+    --card:#fffdf8; --accent:#5b3df5; --accent-soft:#efeaff;
+    --green:#0f7b4f; --green-soft:#e8f6ee; --amber:#a35a00;
+    --amber-soft:#fff3df; --blue:#1d4ed8; --blue-soft:#eaf0ff;
+    --danger:#b42318; --danger-soft:#fef3f2;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.55;
+  }
+  .page{max-width:1240px;margin:0 auto;padding:28px 24px 60px}
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:18px}
+  .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+  h1{font-size:30px;line-height:1.15;margin:6px 0 8px;letter-spacing:-.02em}
+  .lede{margin:0;max-width:760px;color:var(--muted);font-size:14px}
+  .back{
+    flex:0 0 auto;display:inline-flex;align-items:center;height:34px;padding:0 14px;
+    border:1px solid var(--line);border-radius:8px;background:var(--card);
+    color:var(--ink);text-decoration:none;font-size:12px;
+  }
+  .back:hover{border-color:var(--accent);color:var(--accent)}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 24px}
+  .pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:11px;border:1px solid var(--line);background:#fff}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .pill.done .dot{background:var(--green)} .pill.target .dot{background:var(--accent)} .pill.future .dot{background:var(--amber)}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card h2{font-size:16px;margin:0 0 4px}
+  .card .sub{margin:0 0 16px;font-size:12px;color:var(--muted)}
+  .flow{display:flex;flex-direction:column;gap:0}
+  .step{display:grid;grid-template-columns:30px 1fr;gap:10px;position:relative;padding-bottom:16px}
+  .step:last-child{padding-bottom:0}
+  .step::before{content:"";position:absolute;left:14px;top:26px;bottom:0;width:2px;background:#e8e1d4}
+  .step:last-child::before{display:none}
+  .num{width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:700;z-index:1}
+  .step h3{margin:1px 0 2px;font-size:13px}
+  .step p{margin:0;color:var(--muted);font-size:12px}
+  .mono{font-family:var(--mono);font-size:11px}
+  .tag{display:inline-block;padding:1px 6px;border-radius:5px;background:#f2eee5;color:#475467;font-size:10.5px;margin:2px 4px 2px 0;font-family:var(--mono)}
+  .tag.a{background:var(--accent-soft);color:var(--accent)}
+  .tag.g{background:var(--green-soft);color:var(--green)}
+  .tag.b{background:var(--blue-soft);color:var(--blue)}
+  .tag.w{background:var(--amber-soft);color:var(--amber)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:#b9b0a0;font-size:18px;margin:2px 0 10px}
+  .pipeline{display:flex;align-items:stretch;gap:10px}
+  .node{flex:1 1 0;min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;padding:12px;min-height:92px;display:flex;flex-direction:column;gap:4px;position:relative}
+  .node .label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  .node strong{font-size:13px}
+  .node small{color:var(--muted);font-size:11px}
+  .node.accent{border-color:#c7b9ff;background:#faf8ff}
+  .node.green{border-color:#b7e4cb;background:#f7fdf9}
+  .node.amber{border-color:#f3d5a6;background:#fffaf1}
+  .arrow-h{flex:0 0 14px;display:flex;align-items:center;justify-content:center;color:#b9b0a0;font-size:20px}
+  .wide{grid-column:1/-1}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:left;vertical-align:top;padding:8px 9px;border-bottom:1px solid #eee8dc}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+  td code{font-family:var(--mono);font-size:11px;background:#f7f4ec;padding:1px 4px;border-radius:4px}
+  .note{border-left:3px solid var(--accent);background:#faf8ff;padding:10px 12px;font-size:12px;color:#475467;border-radius:0 8px 8px 0;margin-top:14px}
+  .warn{border-left:3px solid var(--amber);background:#fffaf1}
+  .anchor-demo{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;margin:6px 0}
+  .chip{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:5px;background:var(--accent-soft);border:1px solid #c7b9ff;color:var(--accent);font-family:var(--mono);font-size:11px}
+  .chip::before{content:"{ }";font-size:9px;opacity:.7}
+  .kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:12px;margin-top:10px}
+  .kv dt{color:var(--muted)} .kv dd{margin:0}
+  @media (max-width:980px){
+    .grid{grid-template-columns:1fr}
+    .pipeline{flex-direction:column}
+    .node{flex:1 1 auto}
+    .arrow-h{transform:rotate(90deg);padding:2px 0}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <div class="kicker">Templatical · Variable Anchor Design</div>
+      <h1>变量锚点的编辑流程与数据流转</h1>
+      <p class="lede">
+        变量在编辑器里是受保护的锚点（chip），不是普通文本。保存草稿时把锚点归一化成
+        <span class="mono">{{key}}</span> 的 token_html；发送前再由 Handlebars 渲染成最终 HTML。
+      </p>
+    </div>
+    <a class="back" href="/mailchimp/templatical/">← 返回编辑器</a>
+  </header>
+
+  <div class="legend">
+    <span class="pill done"><span class="dot"></span>当前样例已实现</span>
+    <span class="pill target"><span class="dot"></span>目标模型</span>
+    <span class="pill future"><span class="dot"></span>待接入</span>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>一、编辑阶段：把变量当元素操作</h2>
+      <p class="sub">用户不需要、也不允许直接写 <span class="mono">{{}}</span>。</p>
+      <div class="flow">
+        <div class="step">
+          <div class="num">1</div>
+          <div>
+            <h3>在正文文本中放置光标</h3>
+            <p>双击文本进入编辑、出现光标后，右侧设置栏底部自动出现 Handlebars 变量面板，同时记录光标所在的 block 与文本偏移；光标消失或点击到正文/侧栏之外时，面板自动收起。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div>
+            <h3>第一部分：插入新锚点</h3>
+            <p>填写 key / 类型 / 示例值等信息，点击「插入锚点」即在当前光标处插入一个新变量锚点。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div>
+            <h3>第二部分：复用已有变量</h3>
+            <p>已定义的变量按使用次数列出；点击任意一行，会在当前光标处插入锚点并复用该变量 schema。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div>
+            <h3>进入变量编辑面板</h3>
+            <p>插入锚点后，或点击正文中的 merge tag chip，面板切换成该变量的编辑态，可修改类型、示例值、默认值和描述。</p>
+            <div class="anchor-demo">
+              价格：<span class="chip">product.price</span>
+            </div>
+            <p>chip 不可直接改文本；key 在编辑态只读，避免破坏已插入的锚点。删除变量时会先显示引用次数，二次确认后移除正文中的全部相关锚点并删除变量定义。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <div>
+            <h3>同一变量可插入多处锚点，也可拖拽调整位置</h3>
+            <p>一个 key 对应一份 schema，正文可以有 N 个 anchor；点击 chip 直接拖拽即可移动，支持同一文本块内和跨文本块拖动。</p>
+            <p><span class="tag a">product.price → a_01</span><span class="tag a">product.price → a_07</span><span class="tag a">product.price → a_12</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">6</div>
+          <div>
+            <h3>保存草稿 / 模板快照</h3>
+            <p>design_json 保留锚点；同时保存 <span class="mono">variables</span> 和归一化后的 <span class="mono">token_html</span>，模板快照再记录 <span class="mono">version</span>。</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">7</div>
+          <div>
+            <h3>用 token_html 预览</h3>
+            <p>预览服务按 schema 的 sample / default 替换 <span class="mono">{{key}}</span>，输出最终 HTML；缺少必填示例值时会提示。实际发送时传入真实 values 即可复用同一渲染逻辑。</p>
+          </div>
+        </div>
+      </div>
+      <div class="note warn">
+        <b>保护规则：</b>锚点 <code>contenteditable=false</code>；正文里直接输入或粘贴的裸
+        <span class="mono">{{...}}</span> 在保存时会被校验，未知 key 阻止保存。
+        变量组件不允许挂超链接：选中变量时添加链接会被阻止，保存/载入草稿时会自动移除误加到变量上的链接。
+        选中变量组件时，上方文本格式工具栏也会隐藏，避免对变量做文本属性操作。
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>二、保存后的三层数据</h2>
+      <p class="sub">设计态、发送态、契约态分开存，互相不污染。</p>
+      <div class="flow">
+        <div class="step">
+          <div class="num">A</div>
+          <div>
+            <h3>design_json</h3>
+            <p>编辑器原生设计数据，保留锚点和位置。</p>
+            <p><span class="tag">&lt;span data-merge-tag="{{product.price}}" data-label="{{product.price}}"&gt;</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">B</div>
+          <div>
+            <h3>variable_schema</h3>
+            <p>一个 key 一条定义，所有锚点共享。</p>
+            <pre class="mono" style="background:#f7f4ec;padding:8px;border-radius:6px;overflow:auto;margin:6px 0 0">{
+  "product.price": {
+    "type": "currency",
+    "required": true,
+    "sample": 59900
+  }
+}</pre>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">C</div>
+          <div>
+            <h3>token_html</h3>
+            <p>唯一发送输入，锚点归一化成 Handlebars token。</p>
+            <p><span class="tag g">&lt;p&gt;价格：{{product.price}}&lt;/p&gt;</span></p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">D</div>
+          <div>
+            <h3>subject / preheader</h3>
+            <p>同样保存 token 模板，发送前一起渲染。</p>
+          </div>
+        </div>
+      </div>
+      <div class="note">
+        锚点可以有 <b>anchorId</b>，但 token_html 里不出现 ID；ID 只用于设计态定位和“使用位置”统计。
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:18px">
+    <h2>三、发布与发送：从 token_html 到最终邮件</h2>
+    <p class="sub">Mailchimp Transactional / SES / Resend / 自研服务只是 Sender adapter。</p>
+    <div class="note">
+      样例已提供 <a href="/mailchimp/templatical/send-simulator.html" target="_blank" rel="noreferrer">发送模拟</a>：选择已保存的模板/草稿，填写变量值，渲染并模拟发送。只生成最终 HTML 和本地发送快照，不会真实投递。
+    </div>
+    <div class="pipeline">
+      <div class="node accent">
+        <span class="label">Published</span>
+        <strong>模板版本</strong>
+        <small>design_json + schema + token_html</small>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="node">
+        <span class="label">Render Service</span>
+        <strong>Handlebars 渲染</strong>
+        <small>校验 data → 渲染 subject / preheader / html</small>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="node green">
+        <span class="label">RenderedEmail</span>
+        <strong>最终 HTML</strong>
+        <small>html + text + subject + headers</small>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="node amber">
+        <span class="label">Sender Adapter</span>
+        <strong>投递</strong>
+        <small>Mailchimp Transactional / SES / Resend / 自研</small>
+      </div>
+      <div class="arrow-h">→</div>
+      <div class="node">
+        <span class="label">Audit</span>
+        <strong>发送快照</strong>
+        <small>data + rendered html + provider id</small>
+      </div>
+    </div>
+    <div class="note">
+      供应商不解析模板；它只接收最终 HTML。这样换供应商时模板、变量和渲染链路都不变。
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:18px">
+    <h2>四、文件 / 数据流转</h2>
+    <p class="sub">当前样例与目标模型对照。</p>
+    <table>
+      <thead>
+        <tr><th>文件 / 存储</th><th>当前样例</th><th>目标模型</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>templatical_drafts.json</code></td>
+          <td>已存 <code>content</code>（锚点）+ <code>variables</code> schema + <code>token_html</code>。</td>
+          <td>保持：<code>content</code> 只存锚点，<code>token_html</code> 作为发送输入。</td>
+        </tr>
+        <tr>
+          <td><code>templatical_templates.json</code></td>
+          <td>已存 <code>template_id / name / content / variables / token_html / version / saved_at</code>。</td>
+          <td>保持；每次保存模板时版本 +1。</td>
+        </tr>
+        <tr>
+          <td>Mailchimp template</td>
+          <td>保存时 Templatical 导出 HTML，chip 已归一化为 <span class="mono">{{key}}</span>。</td>
+          <td>仍可保存，但只作为投递副本；token_html 才是契约。</td>
+        </tr>
+        <tr>
+          <td><code>token_html</code></td>
+          <td>已随纯草稿和模板快照落盘；保存时捕获导出 HTML 并移除 chip 包裹。</td>
+          <td>作为 Render Service 的唯一输入。</td>
+        </tr>
+        <tr>
+          <td>预览 / 渲染接口</td>
+          <td><code>POST /templatical-preview</code> 用 schema 的 sample/default 渲染 token_html；草稿箱可直接预览已保存的 token_html。</td>
+          <td>接入真实发送数据时传 <code>values</code>，输出最终 HTML。</td>
+        </tr>
+        <tr>
+          <td><code>email_send_snapshot</code></td>
+          <td>发送模拟会写本地 <code>templatical_sends.json</code>：values / rendered_html / simulated message id。</td>
+          <td>每次发送存 data / rendered_html / provider_message_id。</td>
+        </tr>
+        <tr>
+          <td>Render Service</td>
+          <td>样例已有最小 Python 渲染接口（校验必填、HTML 转义、type=html 透传）。</td>
+          <td>正式服务用 Handlebars + schema 校验，输出 RenderedEmail。</td>
+        </tr>
+        <tr>
+          <td>Sender Adapter</td>
+          <td>目前直接保存 MC 模板。</td>
+          <td>Mailchimp Transactional 先接；后续 SES / Resend / 自研。</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="grid" style="margin-top:18px">
+    <section class="card">
+      <h2>五、变量面板要看到什么</h2>
+      <dl class="kv">
+        <dt>key</dt><dd><span class="mono">{{product.price}}</span></dd>
+        <dt>类型</dt><dd>text / number / currency / url / html / date</dd>
+        <dt>必填</dt><dd>发送前缺失时阻止发送</dd>
+        <dt>示例值</dt><dd>预览和测试使用</dd>
+        <dt>默认值</dt><dd>缺失时的兜底</dd>
+        <dt>使用位置</dt><dd>3 处 → 点击定位 / 高亮所有锚点</dd>
+        <dt>改名策略</dt><dd>v1 建议 key 不可改；需要新 key 时复制变量</dd>
+      </dl>
+    </section>
+
+    <section class="card">
+      <h2>六、校验与边界</h2>
+      <div class="flow">
+        <div class="step"><div class="num">1</div><div><h3>锚点必须引用 schema</h3><p>不存在于 schema 的 key 不允许保存。</p></div></div>
+        <div class="step"><div class="num">2</div><div><h3>裸 token 拦截</h3><p>正文里手写或粘贴的 <span class="mono">{{unknown}}</span> 在保存时报错。</p></div></div>
+        <div class="step"><div class="num">3</div><div><h3>key 安全</h3><p>禁止 <span class="mono">__proto__</span> / <span class="mono">constructor</span> / <span class="mono">prototype</span>。</p></div></div>
+        <div class="step"><div class="num">4</div><div><h3>转义由类型决定</h3><p>text/currency/url 默认 <span class="mono">{{key}}</span>；raw html 才允许 <span class="mono">{{{key}}}</span>。</p></div></div>
+        <div class="step"><div class="num">5</div><div><h3>锚点 ID 不进 token</h3><p>Handlebars 只认 key；anchorId 只用于编辑器定位。</p></div></div>
+      </div>
+    </section>
+  </div>
+
+  <p class="lede" style="margin-top:24px;font-size:11.5px;color:#98a2b3">
+    示意图对应实现：Templatical 左侧 Block palette 的「{ } 变量」入口、变量 schema、纯草稿 variables 字段；
+    标为“目标/待接入”的部分是后续 token_html、Render Service、发送快照和 Sender Adapter。
+  </p>
+</div>
+</body>
+</html>
