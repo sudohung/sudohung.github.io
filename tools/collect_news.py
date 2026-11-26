@@ -38,6 +38,17 @@ SOURCES = [
     {"name": "TechCrunch", "type": "rss", "url": "https://techcrunch.com/feed/", "limit": 5},
 ]
 
+# 海外焦点（凌晨 3 点任务）：只采集国外 IT / 科技热点
+FOREIGN_SOURCES = [
+    {"name": "Hacker News", "type": "hn", "limit": 10},
+    {"name": "The Verge", "type": "rss", "url": "https://www.theverge.com/rss/index.xml", "limit": 6},
+    {"name": "Ars Technica", "type": "rss", "url": "https://feeds.arstechnica.com/arstechnica/index", "limit": 6},
+    {"name": "Engadget", "type": "rss", "url": "https://www.engadget.com/rss.xml", "limit": 6},
+    {"name": "InfoQ", "type": "rss", "url": "https://feed.infoq.com/", "limit": 5},
+    {"name": "MIT Technology Review", "type": "rss", "url": "https://www.technologyreview.com/feed/", "limit": 5},
+    {"name": "TechCrunch", "type": "rss", "url": "https://techcrunch.com/feed/", "limit": 5},
+]
+
 STYLE = """
 :root{--accent:#ff7e5f;--accent2:#feb47b;}
 *{box-sizing:border-box}
@@ -178,9 +189,9 @@ def collect_hn(limit):
     return out
 
 
-def collect():
+def collect(sources):
     result = []
-    for src in SOURCES:
+    for src in sources:
         try:
             if src["type"] == "hn":
                 items = collect_hn(src.get("limit", 8))
@@ -193,7 +204,7 @@ def collect():
     return result
 
 
-def render_snapshot(date_str, time_str, sections):
+def render_snapshot(date_str, time_str, sections, label="资讯快报"):
     parts = []
     for sec in sections:
         lis = "".join(
@@ -209,9 +220,9 @@ def render_snapshot(date_str, time_str, sections):
         parts.append('<div class="card empty">本次未采集到资讯（新闻源暂不可用）。</div>')
     body = "\n".join(parts)
     return PAGE_TPL.format(
-        title=f"资讯 · {date_str} {time_str}",
+        title=f"{label} · {date_str} {time_str}",
         style=STYLE,
-        h1=f"资讯快报 · {date_str} {time_str}",
+        h1=f"{label} · {date_str} {time_str}",
         meta=f"采集时间 {date_str} {time_str}（Asia/Shanghai）",
         crumb='<div class="crumb"><a href="../">← 返回当日列表</a> · <a href="../../">全部日期</a></div>',
         body=body,
@@ -293,6 +304,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo", default=os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--focus", choices=["all", "foreign"], default="all",
+                    help="all=中英混合(默认)；foreign=仅海外 IT/科技热点")
     args = ap.parse_args()
 
     now = datetime.now(CST)
@@ -300,13 +313,16 @@ def main():
     time_str = now.strftime("%H%M")
     news_dir = os.path.join(args.repo, "news")
 
-    print(f"collecting for {date_str} {time_str} ...")
-    sections = collect()
+    sources = FOREIGN_SOURCES if args.focus == "foreign" else SOURCES
+    label = "海外科技资讯快报" if args.focus == "foreign" else "资讯快报"
+
+    print(f"collecting for {date_str} {time_str} (focus={args.focus}) ...")
+    sections = collect(sources)
     total = sum(len(s["items"]) for s in sections)
     print(f"collected {total} items from {len(sections)} sources")
 
     write(os.path.join(news_dir, date_str, f"{time_str}.html"),
-          render_snapshot(date_str, time_str, sections))
+          render_snapshot(date_str, time_str, sections, label))
     rebuild_indexes(news_dir)
     print(f"wrote news/{date_str}/{time_str}.html and indexes")
 
