@@ -1,4 +1,4 @@
 1:"$Sreact.fragment"
-2:I[79681,["/mailchimp/mail-studio/_next/static/chunks/bd2568becc932adb.js"],"default"]
-3:I[64324,["/mailchimp/mail-studio/_next/static/chunks/bd2568becc932adb.js"],"default"]
+2:I[79681,["/editors/mail-studio/_next/static/chunks/bd2568becc932adb.js"],"default"]
+3:I[64324,["/editors/mail-studio/_next/static/chunks/bd2568becc932adb.js"],"default"]
 0:{"buildId":"XLIayGEwC7QSCcXC7pGCc","rsc":["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","template":["$","$L3",null,{}]}]]}],"loading":null,"isPartial":false}

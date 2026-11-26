@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  var BUNDLE_URL = "/mailchimp/templatical/import-html.bundle.js";
+  var BUNDLE_URL = "/editors/templatical/import-html.bundle.js";
   var refs = {};
   var converterPromise = null;
   var loadedFileName = "";
