@@ -1,13 +1,22 @@
-# 邮件编辑器样例（选型报告落地）
+# 邮件编辑器样例
 
-本目录按《开源邮件编辑器选型报告》中的 4 个推荐项目落地。Templatical 已在
-`webstatic/mailchimp/templatical/` 单独维护；这里放报告里除 Templatical 外的 3 个编辑器。
+部署在 GitHub Pages 的 6 个开源邮件编辑器在线样例：
 
-| 编辑器 | 目录 | 访问路径 | 技术栈 |
+- 构建产物：`editors/<name>/`（访问 `/editors/<name>/`）
+- 源码工程：`editors/source/<name>/`（已排除 node_modules/.git/.next/out 等）
+
+| 编辑器 | 构建产物 | 源码 | 上游/技术栈 |
 |---|---|---|---|
-| Maily | `maily/` | `/mailchimp/maily/` | React + Vite + `@maily-to/core` + `@maily-to/render` |
-| GrapesJS + MJML | `grapesjs/` | `/mailchimp/grapesjs/` | Vite + `grapesjs` + `grapesjs-mjml` + `mjml-browser` |
-| EmailBuilder.js | `emailbuilder/` | `/mailchimp/emailbuilder/` | React 18 + MUI + Vite + `@usewaypoint/email-builder` |
+| Templatical | `editors/templatical/` | `editors/source/templatical/` | `templatical/sdk` 的 `examples/react-vite` |
+| Easy Email | `editors/easy-email/` | `editors/source/easy-email/` | `zalify/easy-email-editor` |
+| Mail Studio | `editors/mail-studio/` | `editors/source/mail-studio/` | `wzc520pyfm/mail-studio` |
+| Maily | `editors/maily/` | `editors/source/maily/` | React + Vite + `@maily-to/core` |
+| GrapesJS + MJML | `editors/grapesjs/` | `editors/source/grapesjs/` | Vite + `grapesjs-mjml` |
+| EmailBuilder.js | `editors/emailbuilder/` | `editors/source/emailbuilder/` | `@usewaypoint/email-builder` |
+
+资源库（纯静态替代后端）：清单源 `editors/resources/library.txt` → 运行
+`python3 editors/resources/generate_manifest.py` → 生成 `mailchimp/api/resources`（编辑器请求
+`GET /mailchimp/api/resources` 时读取）。
 
 ## 隔离设计
 

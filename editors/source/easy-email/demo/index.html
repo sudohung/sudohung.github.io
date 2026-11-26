@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <meta
+      name="description"
+      content="Easy Email is an open-source React email editor for drag-and-drop MJML email building. Try the editor, then upgrade to Easy Email Pro for a self-hosted SDK, custom blocks, AI assistant, and SaaS-ready workflows."
+    />
+    <meta
+      name="keywords"
+      content="open source email editor, React email editor, MJML email builder, drag and drop email editor, self-hosted email editor SDK, Easy Email Pro"
+    />
+    <meta
+      property="og:title"
+      content="Easy Email - Open-source React email editor with MJML output"
+    />
+    <meta
+      property="og:description"
+      content="Try the open-source React email editor, then explore Easy Email Pro for a self-hosted commercial email editor SDK."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Easy Email - Open-source React email editor with MJML output"
+    />
+    <meta
+      name="twitter:description"
+      content="Drag-and-drop MJML email editing for React, with a commercial Easy Email Pro SDK path for SaaS products."
+    />
+
+    <%- buildTime %>
+    <title>Easy Email - Open-source React email editor with MJML output</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Easy Email",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "description": "Open-source React email editor with drag-and-drop editing and MJML output.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "isRelatedTo": {
+          "@type": "SoftwareApplication",
+          "name": "Easy Email Pro",
+          "url": "https://www.easyemail.pro/",
+          "applicationCategory": "DeveloperApplication"
+        }
+      }
+    </script>
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-N6T7TGX');
+    </script>
+    <!-- End Google Tag Manager -->
+  </head>
+
+  <body style="height: 100vh">
+    <div
+      id="root"
+      style="width: 100%; height: 100%"
+    >
+      <div
+        style="
+          height: 100%;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        "
+      >
+        <img
+          width="200px"
+          src="/loading"
+          alt=""
+        />
+        <p style="font-size: 24px; color: rgba(0, 0, 0, 0.65)">Please wait a moment.</p>
+      </div>
+    </div>
+    <script
+      type="module"
+      src="/src/main.tsx"
+    ></script>
+  </body>
+</html>

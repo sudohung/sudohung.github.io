@@ -1,0 +1,26 @@
+/**
+ * UI state types
+ */
+
+// Editor view modes
+export type EditorMode = "canvas" | "edit" | "preview" | "code";
+
+// Code editor language modes
+export type CodeLanguage = "mjml" | "markdown";
+
+// Preview device modes
+export type PreviewMode = "desktop" | "mobile";
+
+// Sidebar tabs
+export type SidebarTab = "components" | "templates" | "layouts";
+
+// Drag item type
+export interface DragItem {
+  type: "new-component" | "existing-node";
+  componentType?: string;
+  nodeId?: string;
+  nodeType?: string;
+  parentId?: string;
+  parentAcceptTypes?: string[];
+  index?: number;
+}
