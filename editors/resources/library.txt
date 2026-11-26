@@ -1,0 +1,25 @@
+# 资源库源清单（可维护）
+#
+# 每行一条资源，空行和以 # 开头的行会被忽略。条目可以是：
+#   1) 本地文件名（相对本目录），例如：hero-g9l-launch.png
+#      -> 生成到清单时转成站点绝对路径 /editors/resources/<文件名>
+#   2) 完整 http(s) URL（原样使用），例如：https://cdn.example.com/a.png
+#
+# 修改本文件后，执行生成脚本刷新静态清单：
+#   python3 editors/resources/generate_manifest.py
+#
+# 生成的清单写入：mailchimp/api/resources（编辑器请求 GET /mailchimp/api/resources 时读取）
+hero-g9l-launch.png
+hero-p7-roadshow.png
+banner-test-drive.png
+banner-fleet-expo.png
+banner-newsletter.png
+banner-product-highlight.png
+logo-xpeng.png
+logo-xpeng-dark.png
+logo-xpeng-white.png
+visual-save-the-date.png
+background-charge-ahead.png
+flexstart-hero.png
+flexstart-outdoor.png
+flexstart-yoga.png

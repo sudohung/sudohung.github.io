@@ -1,0 +1,77 @@
+{
+  "ok": true,
+  "total": 14,
+  "library_file": "editors/resources/library.txt",
+  "resources": [
+    {
+      "url": "/editors/resources/hero-g9l-launch.png",
+      "name": "hero-g9l-launch.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/hero-p7-roadshow.png",
+      "name": "hero-p7-roadshow.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/banner-test-drive.png",
+      "name": "banner-test-drive.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/banner-fleet-expo.png",
+      "name": "banner-fleet-expo.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/banner-newsletter.png",
+      "name": "banner-newsletter.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/banner-product-highlight.png",
+      "name": "banner-product-highlight.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/logo-xpeng.png",
+      "name": "logo-xpeng.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/logo-xpeng-dark.png",
+      "name": "logo-xpeng-dark.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/logo-xpeng-white.png",
+      "name": "logo-xpeng-white.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/visual-save-the-date.png",
+      "name": "visual-save-the-date.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/background-charge-ahead.png",
+      "name": "background-charge-ahead.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/flexstart-hero.png",
+      "name": "flexstart-hero.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/flexstart-outdoor.png",
+      "name": "flexstart-outdoor.png",
+      "kind": "image"
+    },
+    {
+      "url": "/editors/resources/flexstart-yoga.png",
+      "name": "flexstart-yoga.png",
+      "kind": "image"
+    }
+  ]
+}
