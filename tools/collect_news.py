@@ -330,7 +330,7 @@ def render_index(dates):
         title="资讯",
         style=STYLE,
         h1="资讯",
-        meta="每日 10:00 / 14:00 自动采集",
+        meta="每日 03:00 / 10:00 / 14:00 自动采集",
         crumb='<div class="crumb"><a href="../index.html">← 返回首页</a></div>',
         body=f'<div class="date-list">{cards}</div>',
         year=(dates[0][:4] if dates else datetime.now(CST).year),
