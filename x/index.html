@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X · 跨网络 Agent 协作平台设计</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#fff; --ink:#1a1d27; --muted:#5b6172;
+    --line:#e3e6ef; --brand:#4c5bd4; --brand2:#7a5cf0; --accent:#00a37a;
+    --warn:#c2410c; --code-bg:#11141d; --code-ink:#d9e0f0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;font-weight:400}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#20244a 0%,#3b2f7a 45%,#4c5bd4 100%);color:#fff;padding:64px 24px 56px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:760px;color:#d8dcf5;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc ol{list-style:none;margin:0;padding:0;counter-reset:toc}
+  nav.toc li{margin:2px 0}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:14px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:560px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  .flow-badge{font-family:"JetBrains Mono",monospace;font-size:12px;background:#eef0f8;color:var(--brand);padding:1px 7px;border-radius:5px}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2}section{padding:22px 18px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Design Doc · v0.1 · 2026-11-28</div>
+    <h1>X — 跨网络 Agent 协作平台</h1>
+    <p>一个可部署的 Agent 协作节点：对内驱动本机多个 opencode 实例，对外以 Web 与「另一个 X」为接入端；X 与 X 通过长连接组成联邦，实现跨网络的 Agent 协作。</p>
+    <div class="tags">
+      <span class="tag">Node.js + TypeScript</span>
+      <span class="tag">WebSocket 长连接</span>
+      <span class="tag">挑战应答握手</span>
+      <span class="tag">SQLite 单文件</span>
+      <span class="tag">1 跳联邦</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#s1">目标与边界</a></li>
+      <li><a href="#s2">总体架构</a></li>
+      <li><a href="#s3">连接层</a></li>
+      <li><a href="#s4">决策层</a></li>
+      <li><a href="#s5">Agent 池层</a></li>
+      <li><a href="#s6">接入层</a></li>
+      <li><a href="#s7">数据模型</a></li>
+      <li><a href="#s8">部署与目录</a></li>
+      <li><a href="#s9">关键取舍</a></li>
+      <li><a href="#s10">里程碑与验收</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="s1">
+      <h2><span class="num">01</span>目标与边界</h2>
+      <p class="lead">轻便优先：单进程 + 单文件，不引入额外中间件。</p>
+      <div class="cards">
+        <div class="card"><h4>做</h4><p>接入层、连接层（联邦）、决策层、Agent 池层；会话级跨节点透传。</p></div>
+        <div class="card"><h4>不做</h4><p>不管理 opencode 进程生命周期；不依赖 Redis / MQ / 注册中心；MVP 仅 1 跳联邦。</p></div>
+        <div class="card"><h4>后置</h4><p>多跳转发、并行 fan-out 与聚合、动态 peer 发现、对外 MCP 接口。</p></div>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>总体架构</h2>
+      <p class="lead">四层职责清晰，联邦只是把远端 X 当成一种特殊执行者。</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph 接入端
+        W[Web 浏览器]
+        P[对端 X]
+    end
+    subgraph X实例
+        A[接入层<br/>Web 通道 / Peer Gateway / HTTP API]
+        C[连接层<br/>PeerLink · 握手鉴权 · 心跳重连 · 信封协议]
+        D[决策层<br/>能力注册表 · 路由 规则→LLM兜底 · 会话映射]
+        G[Agent 池层<br/>实例注册 · 健康 · 并发租约 · OpencodeClient]
+    end
+    subgraph 内网
+        O1[opencode #1]
+        O2[opencode #2]
+    end
+    W -->|WS| A
+    P <-->|WSS 长连接| C
+    A --> D
+    D --> G
+    G --> O1
+    G --> O2
+    C <--> D
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>层</th><th>职责</th></tr></thead>
+        <tbody>
+          <tr><td>接入层</td><td>WebSocket / HTTP 入口、用户鉴权、会话列表与事件展示、审批交互</td></tr>
+          <tr><td>连接层</td><td>握手鉴权、长连接状态机、信封编解码、心跳重连、去重、1 跳转发</td></tr>
+          <tr><td>决策层</td><td>能力注册表、路由选择、上下文预算、会话映射</td></tr>
+          <tr><td>Agent 池层</td><td>opencode 实例配置、健康与熔断、并发租约、会话粘性</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        <strong>四条原则</strong>：只有 X 暴露公网端口；控制面与数据面分离；单实例可独立工作；会话状态唯一归属上行 X。
+      </div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>连接层</h2>
+      <p class="lead">统一信封 + 挑战应答握手 + 可恢复的连接状态机。</p>
+
+      <h3>3.1 消息信封</h3>
+      <pre><code>{ "v": 1, "id": "uuid", "type": "prompt", "ts": 1730000000,
+  "from": "x-a", "to": "x-b",
+  "traceId": "t-...", "corrId": "session-...", "payload": {} }</code></pre>
+      <ul>
+        <li><code>id</code> 全局唯一，用于 at-least-once 去重（每 peer LRU + TTL 10min）。</li>
+        <li><code>traceId</code> 贯穿跨 X，日志与 Web 调试视图共用。</li>
+        <li><code>chunk</code> 携带 <code>seq</code>，断线后从最后 seq 续传。</li>
+      </ul>
+      <p><strong>消息类型</strong>：<span class="flow-badge">hello</span> <span class="flow-badge">challenge</span> <span class="flow-badge">auth</span> <span class="flow-badge">auth_ok</span> <span class="flow-badge">capability.update</span> <span class="flow-badge">session.open</span> <span class="flow-badge">session.accept</span> <span class="flow-badge">prompt</span> <span class="flow-badge">chunk</span> <span class="flow-badge">tool</span> <span class="flow-badge">question</span> <span class="flow-badge">permission</span> <span class="flow-badge">answer</span> <span class="flow-badge">done</span> <span class="flow-badge">error</span> <span class="flow-badge">cancel</span> <span class="flow-badge">ping/pong</span></p>
+
+      <h3>3.2 握手时序（挑战应答 + 公钥固定）</h3>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as 主动方 X-A
+    participant B as 被连方 X-B
+    A->>B: hello
+    B->>A: challenge(nonceA, TTL 30s)
+    Note over A: 生成 nonceB
+    A->>B: auth RSA-OAEP(AESKey) + IV + AES-GCM(nonceB, pubKeyA, nonceA)
+    Note over B: 私钥解出 AESKey → 解密<br/>校验 nonceA 一致<br/>校验 pubKeyA 指纹等于配置值
+    B->>A: auth_ok RSA-OAEP(AESKey2) + IV + AES-GCM(nonceA, nonceB)
+    Note over A: 解密并校验 nonceA + nonceB 一致
+    A->>B: 进入 ACTIVE，开始通信
+        </div>
+      </div>
+      <div class="callout warn">
+        <strong>两个工程要点</strong>：RSA 无法直接加密变长数据，实际用 RSA-OAEP 包裹 AES-GCM 会话密钥；<code>nonceA</code> 必须一次性消费 + 30s TTL + 按 IP 限频，且对端公钥必须与配置指纹比对，防止中间人替换公钥。
+      </div>
+
+      <h3>3.3 连接状态机</h3>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> CONNECTING
+    CONNECTING --> CHALLENGE_SENT: 发出 hello
+    CHALLENGE_SENT --> AUTH_PENDING: 收到 challenge
+    AUTH_PENDING --> ACTIVE: 双向校验通过
+    AUTH_PENDING --> CLOSED: 校验失败 / 超时 / 指纹不符
+    ACTIVE --> DRAINING: 主动下线
+    ACTIVE --> CONNECTING: 心跳超时 3×15s 或断线退避
+    DRAINING --> CLOSED
+        </div>
+      </div>
+
+      <h3>3.4 断线与幂等</h3>
+      <ul>
+        <li>心跳 15s，连续 3 次无 pong 判定断线；重连指数退避 1s → 30s（带抖动）。</li>
+        <li>远端执行不因连接断开而中断，结果落库；重连后按 <code>corrId + seq</code> 补推。</li>
+        <li>去重保证至少一次，会话内消息按 seq 保序。</li>
+      </ul>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>决策层</h2>
+      <p class="lead">能力注册表为主，LLM 只做兜底；选择过程可解释。</p>
+      <pre><code>{ "agentId": "oc-1", "instanceId": "i-1", "tags": ["code-review", "java"],
+  "model": "xxx", "maxConcurrency": 2, "status": "healthy",
+  "source": "local", "peerId": null, "version": 12 }</code></pre>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    S[消息] --> E{显式 target?}
+    E -->|是| P1[直发指定 agent/peer]
+    E -->|否| L{本地精确 tag?}
+    L -->|是| P2[本地最小负载]
+    L -->|否| R{远端精确 tag?}
+    R -->|是| P3[远端 X 执行]
+    R -->|否| LLM[LLM 在候选清单中选择]
+    LLM --> U[仍不确定则回问用户]
+        </div>
+      </div>
+      <ul>
+        <li><strong>不舍近求远</strong>：本地有匹配就不再打到远端。</li>
+        <li><strong>能力来源</strong>：静态配置 + 建连上报 + 变更增量推送，带 TTL（借鉴 Nacos 注册与健康模型）。</li>
+        <li><strong>上下文预算</strong>：默认 32k token 估算；<code>session.open</code> 超限先在上行做摘要，之后只发增量 delta；远端会话空闲 TTL 10min，由上行回收。</li>
+      </ul>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>Agent 池层</h2>
+      <p class="lead">agent = 独立 opencode 实例，X 只连接不托管。</p>
+      <pre><code>{ "instances": [
+  { "id": "oc-1", "baseUrl": "http://opencode-1:4097", "token": "***",
+    "workdir": "/workspace/a", "tags": ["java"], "model": "default",
+    "maxConcurrency": 2 }
+]}</code></pre>
+      <div class="cards">
+        <div class="card"><h4>健康与熔断</h4><p>15s 探测；连续 3 次失败熔断 30s（Dubbo 风格）。</p></div>
+        <div class="card"><h4>并发控制</h4><p>全局信号量 + 单实例信号量 + 单会话串行锁。</p></div>
+        <div class="card"><h4>会话粘性</h4><p>sessionId 哈希固定实例；故障时在上行重开并做有界上下文重放。</p></div>
+        <div class="card"><h4>交互事件</h4><p>question / permission 透传给会话所有者，未响应默认拒绝。</p></div>
+      </div>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>接入层</h2>
+      <p class="lead">Web 与机器客户端共用一套 API，鉴权与 peer 通道隔离。</p>
+      <table>
+        <thead><tr><th>接口</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>WS /ws</code></td><td>Web 实时通道：消息流、事件、审批</td></tr>
+          <tr><td><code>HTTP /api/sessions</code></td><td>会话列表与详情</td></tr>
+          <tr><td><code>HTTP /api/messages</code></td><td>发送消息</td></tr>
+          <tr><td><code>HTTP /api/capabilities</code></td><td>能力 / agent / peer 状态</td></tr>
+          <tr><td><code>HTTP /api/approvals</code></td><td>审批响应</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>Web：Vite + React 轻量单页，无重型组件库；含会话列表、流式消息、路由解释卡片、审批横幅、状态面板。</li>
+        <li>鉴权：Web 用户走统一 Bearer/Cookie Token；peer 走独立握手通道，不复用 Web Token。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>数据模型</h2>
+      <p class="lead">SQLite WAL 单文件，DAO 抽象便于后续换 Postgres。</p>
+      <table>
+        <thead><tr><th>表</th><th>关键字段</th></tr></thead>
+        <tbody>
+          <tr><td>peers</td><td>id, base_url, public_key_fp, status, last_seen</td></tr>
+          <tr><td>capabilities</td><td>agent_id, instance_id, tags, source, peer_id, version</td></tr>
+          <tr><td>sessions</td><td>id, owner_node, peer_id, remote_session_id, context_state, ttl</td></tr>
+          <tr><td>messages</td><td>id, session_id, seq, role, content, trace_id, created_at</td></tr>
+          <tr><td>pending_events</td><td>id, session_id, seq, payload, delivered</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>部署与目录</h2>
+      <p class="lead">单镜像 + Docker Compose；只有 X 暴露公网端口。</p>
+      <pre><code>x/
+  src/protocol/     信封、消息类型、编解码
+  src/connection/   握手、PeerLink、状态机、重连、去重
+  src/decision/     能力注册表、路由、上下文预算
+  src/pool/         OpencodeClient、健康、信号量、粘性
+  src/access/       HTTP/WS API
+  web/              轻量前端
+  config/           peers.json、agents.json、keys/
+  data/             x.db</code></pre>
+      <ul>
+        <li>Compose：<code>x</code> 暴露唯一公网端口；<code>opencode-1..N</code> 仅内网，各自挂载独立 workspace 卷。</li>
+        <li>CLI：<code>x keygen</code> 生成密钥对；<code>x peer add</code> 写入对端地址与公钥指纹。</li>
+      </ul>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>关键取舍</h2>
+      <table>
+        <thead><tr><th>取舍</th><th>原因</th></tr></thead>
+        <tbody>
+          <tr><td>进程内状态 + SQLite，不引中间件</td><td>单节点轻便，部署即用；借鉴 Redis/Nacos 模式而非依赖组件</td></tr>
+          <tr><td>静态 peer + 1 跳转发</td><td>避免环与风暴，MVP 够用，多跳后置</td></tr>
+          <tr><td>显式/标签路由优先，LLM 只兜底</td><td>可解释、可控制、成本低</td></tr>
+          <tr><td>会话状态归上行，远端只持执行态</td><td>收尾与续写责任唯一，避免双写冲突</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span>里程碑与验收</h2>
+      <ol>
+        <li><strong>骨架</strong>：协议 + 握手 + 单 agent 打通（Web → 本地 opencode → 流式回显）。</li>
+        <li><strong>池与决策</strong>：多实例、健康熔断、标签路由、审批透传。</li>
+        <li><strong>联邦</strong>：X 间建连、能力上报、会话级透传、断线续传。</li>
+        <li><strong>加固</strong>：指标与日志、消息重放、审计视图。</li>
+      </ol>
+      <div class="callout">
+        <strong>验收标准</strong>：两个 X 实例部署在不同网络，A 侧 Web 发一条任务，经决策选择 B 侧 agent 执行，B 侧流式回传，A 侧展示并可中途取消；断网 30s 内重连后结果不丢。
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  X Design Doc · v0.1 · 2026-11-28 · <a href="../index.html">返回站点首页</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
