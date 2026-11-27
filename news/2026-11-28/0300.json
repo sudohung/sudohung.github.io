@@ -1,0 +1,256 @@
+{
+  "date": "2026-11-28",
+  "time": "0300",
+  "label": "海外科技资讯快报",
+  "total": 43,
+  "sources": [
+    "Hacker News",
+    "The Verge",
+    "Ars Technica",
+    "Engadget",
+    "InfoQ",
+    "MIT Technology Review",
+    "TechCrunch"
+  ],
+  "highlights": [
+    {
+      "title": "Credit card skimming scripts using WebRTC found on popular shopping sites",
+      "link": "https://www.infohawk.com/news/2026-11-27-black-friday-webrtc-skimmer",
+      "source": "Hacker News"
+    },
+    {
+      "title": "Anker’s 100W universal travel charger is down to $60, its lowest price yet",
+      "link": "https://www.theverge.com/gadgets/1041006/anker-100w-universal-travel-charger-black-friday-deal-sale",
+      "source": "The Verge"
+    },
+    {
+      "title": "The best Black Friday deals Ars could find",
+      "link": "https://arstechnica.com/shopping/2026/11/the-best-black-friday-deals-ars-could-find/",
+      "source": "Ars Technica"
+    },
+    {
+      "title": "Hackers reportedly infiltrated the Air Force's cloud systems",
+      "link": "https://www.engadget.com/2329586/hackers-reportedly-infiltrated-the-air-force-cloud-systems/",
+      "source": "Engadget"
+    },
+    {
+      "title": "Meta Brings Code Review Auto-Approval More Mainstream with PyTorch GreenLight",
+      "link": "https://www.infoq.com/news/2026/11/uber-agent-spend-steady/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global",
+      "source": "InfoQ"
+    },
+    {
+      "title": "The Download: Innovators Under 35 nominations are open, and a bionic window into the mind",
+      "link": "https://www.technologyreview.com/2026/11/27/1149960/the-download-the-download-innovators-under-35-nominations-bionic-hand/",
+      "source": "MIT Technology Review"
+    }
+  ],
+  "sections": [
+    {
+      "name": "Hacker News",
+      "items": [
+        {
+          "title": "Credit card skimming scripts using WebRTC found on popular shopping sites",
+          "link": "https://www.infohawk.com/news/2026-11-27-black-friday-webrtc-skimmer"
+        },
+        {
+          "title": "Show HN: bouncemarket – a live prediction market game for a bouncing ball",
+          "link": "https://bouncemarket.minhanhday.com/"
+        },
+        {
+          "title": "Convex skills send the user's app idea to a remote server without telling them",
+          "link": "https://github.com/convex/convex-backend-skill/issues/64"
+        },
+        {
+          "title": "False computer-checked proofs",
+          "link": "https://cr.yp.to/proofs/falseccp.html"
+        },
+        {
+          "title": "First images of the impact of DART asteroid deflection experiment",
+          "link": "https://arstechnica.com/space/2026/11/europes-hera-mission-returns-to-the-chaotic-scene-of-a-cosmic-smashup/"
+        },
+        {
+          "title": "I'm Scared of AI",
+          "link": "https://thesoapbox.email/archive/3"
+        },
+        {
+          "title": "Group chat where your AI talks behind your back",
+          "link": "https://construct22.com/"
+        },
+        {
+          "title": "AI made self-hosting fun again",
+          "link": "https://janlukas.blog/posts/ai-self-hosting"
+        },
+        {
+          "title": "Making a 3D fantasy map like a 16th-Century atlas",
+          "link": "https://www.spritefusion.com/blog/making-a-fantasy-map-like-a-16th-century-atlas"
+        },
+        {
+          "title": "A Deterministic Subexponential-Time Algorithm for the Discrete Logarithm Problem [pdf]",
+          "link": "https://eprint.iacr.org/2026/3020.pdf"
+        }
+      ]
+    },
+    {
+      "name": "The Verge",
+      "items": [
+        {
+          "title": "Anker’s 100W universal travel charger is down to $60, its lowest price yet",
+          "link": "https://www.theverge.com/gadgets/1041006/anker-100w-universal-travel-charger-black-friday-deal-sale"
+        },
+        {
+          "title": "Here are the best Black Friday deals you can grab for $30 or less",
+          "link": "https://www.theverge.com/gadgets/1039645/black-friday-best-cheap-tech-deals-under-30-2026"
+        },
+        {
+          "title": "The absolute best Black Friday deals we’ve found (so far)",
+          "link": "https://www.theverge.com/gadgets/1039190/best-black-friday-2026-deals-tech-gadgets-gift-ideas"
+        },
+        {
+          "title": "The best Black Friday deals on AirPods, MacBooks, and other Apple gear",
+          "link": "https://www.theverge.com/gadgets/1043935/best-black-friday-apple-deals-2026"
+        },
+        {
+          "title": "You can grab a 12-pack of Zepath’s rechargeable AA batteries for just $24",
+          "link": "https://www.theverge.com/gadgets/1043272/zepath-rechargeable-aa-batteries-black-friday-2026-deal-sale"
+        },
+        {
+          "title": "Apple’s AirPods Pro 3 are a whopping $100 off for Black Friday",
+          "link": "https://www.theverge.com/gadgets/1039978/airpods-pro-3-apple-earbuds-black-friday-2026-deal-sale"
+        }
+      ]
+    },
+    {
+      "name": "Ars Technica",
+      "items": [
+        {
+          "title": "The best Black Friday deals Ars could find",
+          "link": "https://arstechnica.com/shopping/2026/11/the-best-black-friday-deals-ars-could-find/"
+        },
+        {
+          "title": "Intel faced a choice: Give Trump 10% or face the consequences",
+          "link": "https://arstechnica.com/tech-policy/2026/11/intel-faced-a-choice-give-trump-10-or-face-the-consequences/"
+        },
+        {
+          "title": "Books, bikes, and The Burbs: These are Ars staff’s holiday gift picks for 2026",
+          "link": "https://arstechnica.com/shopping/2026/11/books-bikes-and-the-burbs-these-are-ars-staffs-holiday-gift-picks-for-2026/"
+        },
+        {
+          "title": "Volvo's big batteries: We drive its updated 2028 plug-in hybrids",
+          "link": "https://arstechnica.com/cars/2026/11/volvos-big-batteries-we-drive-its-updated-2028-plug-in-hybrids/"
+        },
+        {
+          "title": "Ford unveils the GT41 as it hopes to win Le Mans again",
+          "link": "https://arstechnica.com/cars/2026/11/ford-unveils-the-gt41-as-it-hopes-to-win-le-mans-again/"
+        },
+        {
+          "title": "Draining peatlands is responsible for a few percent of our global warming",
+          "link": "https://arstechnica.com/science/2026/11/draining-peatlands-is-responsible-for-a-few-percent-of-our-global-warming/"
+        }
+      ]
+    },
+    {
+      "name": "Engadget",
+      "items": [
+        {
+          "title": "Hackers reportedly infiltrated the Air Force's cloud systems",
+          "link": "https://www.engadget.com/2329586/hackers-reportedly-infiltrated-the-air-force-cloud-systems/"
+        },
+        {
+          "title": "5 Costco Electronics With Deep Discounts For Black Friday 2026",
+          "link": "https://www.engadget.com/2329581/costco-electronics-deep-discounts-black-friday-2026/"
+        },
+        {
+          "title": "WhatsApp adds support for travel eSIMs",
+          "link": "https://www.engadget.com/2329553/whatsapp-adds-support-for-travel-esims/"
+        },
+        {
+          "title": "Google will soon share Android developers' addresses publicly",
+          "link": "https://www.engadget.com/2329389/google-will-soon-share-android-developers-addresses-publicly/"
+        },
+        {
+          "title": "Backloggd urges users to change their passwords after a breach",
+          "link": "https://www.engadget.com/2329256/backloggd-breach-november-2026-password-reset/"
+        },
+        {
+          "title": "1Password says it was hacked but users' vaults are safe",
+          "link": "https://www.engadget.com/2329013/1password-hacked-but-users-vaults-are-safe/"
+        }
+      ]
+    },
+    {
+      "name": "InfoQ",
+      "items": [
+        {
+          "title": "Meta Brings Code Review Auto-Approval More Mainstream with PyTorch GreenLight",
+          "link": "https://www.infoq.com/news/2026/11/uber-agent-spend-steady/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global"
+        },
+        {
+          "title": "Netflix Builds Quasar to Measure the Blast Radius of Library API Changes",
+          "link": "https://www.infoq.com/news/2026/11/netflix-quasar-api-impact/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global"
+        },
+        {
+          "title": "Grafana Begins Its Biggest UI Refresh Since Version 7",
+          "link": "https://www.infoq.com/news/2026/11/grfana-ui-refresh/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global"
+        },
+        {
+          "title": "Presentation: From Fan-Out to Fast: Sub-100ms API Design in Distributed Systems",
+          "link": "https://www.infoq.com/presentations/sub-100ms-latency-distributed-systems/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global"
+        },
+        {
+          "title": "Article: Engineering Reliable Telematics from Smartphone Sensors",
+          "link": "https://www.infoq.com/articles/engineering-reliable-smartphone-sensor-telematics/?utm_campaign=infoq_content&utm_source=infoq&utm_medium=feed&utm_term=global"
+        }
+      ]
+    },
+    {
+      "name": "MIT Technology Review",
+      "items": [
+        {
+          "title": "The Download: Innovators Under 35 nominations are open, and a bionic window into the mind",
+          "link": "https://www.technologyreview.com/2026/11/27/1149960/the-download-the-download-innovators-under-35-nominations-bionic-hand/"
+        },
+        {
+          "title": "Our 2027 Innovators Under 35 competition is now open",
+          "link": "https://www.technologyreview.com/2026/11/27/1149857/2027-innovators-under-35-competition-nominate/"
+        },
+        {
+          "title": "How cutting-edge prosthetics can help probe the human mind",
+          "link": "https://www.technologyreview.com/2026/11/27/1149946/cutting-edge-prosthetics-allow-researchers-to-probe-the-human-mind/"
+        },
+        {
+          "title": "The Download: Better bionic hands and AI’s natural-gas boom",
+          "link": "https://www.technologyreview.com/2026/11/26/1149934/the-download-better-bionic-hands-ai-natural-gas-boom/"
+        },
+        {
+          "title": "The next generation of bionic hands is here—and they can feel",
+          "link": "https://www.technologyreview.com/2026/11/26/1149923/the-next-generation-of-bionic-hands-is-here-and-they-can-feel/"
+        }
+      ]
+    },
+    {
+      "name": "TechCrunch",
+      "items": [
+        {
+          "title": "Nvidia hits pause on chip shipments to Southeast Asia",
+          "link": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/"
+        },
+        {
+          "title": "Is Alice Huang a spy or not?",
+          "link": "https://techcrunch.com/2026/11/26/is-alice-huang-a-spy-or-not/"
+        },
+        {
+          "title": "X finally gets parental controls after 20 years",
+          "link": "https://techcrunch.com/2026/11/26/x-finally-gets-parental-controls-after-20-years/"
+        },
+        {
+          "title": "A month with the iPhone Duo has changed how I use my phone",
+          "link": "https://techcrunch.com/2026/11/26/a-month-with-the-iphone-duo-has-changed-how-i-use-my-phone/"
+        },
+        {
+          "title": "Grand Theft Auto VI proves why efficiency isn’t a virtue",
+          "link": "https://techcrunch.com/2026/11/26/as-anthropic-ipos-grand-theft-auto-vi-proves-why-efficiency-isnt-a-virtue/"
+        }
+      ]
+    }
+  ]
+}
