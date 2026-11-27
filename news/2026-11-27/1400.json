@@ -1,0 +1,248 @@
+{
+  "date": "2026-11-27",
+  "time": "1400",
+  "label": "资讯快报",
+  "total": 41,
+  "sources": [
+    "爱范儿",
+    "少数派",
+    "IT之家",
+    "量子位",
+    "Hacker News",
+    "The Verge",
+    "TechCrunch"
+  ],
+  "highlights": [
+    {
+      "title": "Claude Code 灵魂人物，开始反思 Vibe Coding 的未来了",
+      "link": "https://www.ifanr.com/1695671?utm_source=rss&utm_medium=rss&utm_campaign",
+      "source": "爱范儿"
+    },
+    {
+      "title": "「黑五」值得买：不容错过的 App 和服务优惠",
+      "link": "https://sspai.com/post/119601",
+      "source": "少数派"
+    },
+    {
+      "title": "何小鹏谈“IRON 人形机器人何时进入海外”：中国市场交付后一个季度，就会进入欧洲",
+      "link": "https://www.ithome.com/1/033/344.htm",
+      "source": "IT之家"
+    },
+    {
+      "title": "钛动科技 × 腾讯云达成战略合作，用AI打开企业全球增长新空间",
+      "link": "https://www.qbitai.com/2026/11/513194.html",
+      "source": "量子位"
+    },
+    {
+      "title": "\"What's Claude's Fursona?\" and Other Questions",
+      "link": "https://herecomesthemoon.net/2026/11/whats-claudes-fursona/",
+      "source": "Hacker News"
+    },
+    {
+      "title": "Netflix’s coziest show has made a very quiet return",
+      "link": "https://www.theverge.com/entertainment/1043489/midnight-diner-season3",
+      "source": "The Verge"
+    }
+  ],
+  "sections": [
+    {
+      "name": "爱范儿",
+      "items": [
+        {
+          "title": "Claude Code 灵魂人物，开始反思 Vibe Coding 的未来了",
+          "link": "https://www.ifanr.com/1695671?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "华为 Mate X8 评测：终局之战",
+          "link": "https://www.ifanr.com/1695642?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "早报｜双11手机销量降17%，前五都是iPhone/马斯克：美国每名儿童赠送两股SpaceX/小红书处置逾万篇虚假人设笔记",
+          "link": "https://www.ifanr.com/1695611?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "2026 年，国产模型还能追上 Opus 5.5 吗",
+          "link": "https://www.ifanr.com/1695555?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "ChatGPT即将到来的大更新，为何让老用户集体破防",
+          "link": "https://www.ifanr.com/1695589?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "荣耀 700 Pro 上手：4099 元起，主流价位档里的手机异类",
+          "link": "https://www.ifanr.com/1695371?utm_source=rss&utm_medium=rss&utm_campaign"
+        }
+      ]
+    },
+    {
+      "name": "少数派",
+      "items": [
+        {
+          "title": "「黑五」值得买：不容错过的 App 和服务优惠",
+          "link": "https://sspai.com/post/119601"
+        },
+        {
+          "title": "派早报：1Password 确认内部系统遭入侵等",
+          "link": "https://sspai.com/post/119632"
+        },
+        {
+          "title": "App+1｜Agora：开源、易用、好用，给 Android 用户的 LLM 聊天工具",
+          "link": "https://sspai.com/post/116773"
+        },
+        {
+          "title": "论文作图不求人，用 ChatGPT 和 Keynote 免费搞定机理图",
+          "link": "https://sspai.com/post/119563"
+        },
+        {
+          "title": "我用AI做了一张两千年的中国历史地图",
+          "link": "https://sspai.com/post/117510"
+        },
+        {
+          "title": "派早报：蔚来举办 2026 创新科技日、Tidal 将拒绝 AI 音乐等",
+          "link": "https://sspai.com/post/119560"
+        }
+      ]
+    },
+    {
+      "name": "IT之家",
+      "items": [
+        {
+          "title": "何小鹏谈“IRON 人形机器人何时进入海外”：中国市场交付后一个季度，就会进入欧洲",
+          "link": "https://www.ithome.com/1/033/344.htm"
+        },
+        {
+          "title": "罗技 G 悄然带来 PRO X1 SUPERSTRIKE 鼠标：保留电磁微动，传感器降级",
+          "link": "https://www.ithome.com/1/033/343.htm"
+        },
+        {
+          "title": "不到 90 天从空地到建筑群：SpaceX 数据中心已初具规模，网友直呼“中国速度”",
+          "link": "https://www.ithome.com/1/033/342.htm"
+        },
+        {
+          "title": "阿里千问澄清后训练负责人周浩离职传闻，将起诉造谣自媒体",
+          "link": "https://www.ithome.com/1/033/341.htm"
+        },
+        {
+          "title": "奥迪 Q9 中国首秀：品牌史上最大 SUV，首次启用“9”命名",
+          "link": "https://www.ithome.com/1/033/340.htm"
+        },
+        {
+          "title": "2027 款凯迪拉克 XT5 上市：限时 21.59 万元起，标配蜂鸟底盘、33 英寸 9K 屏 + 2.0T 轻混",
+          "link": "https://www.ithome.com/1/033/338.htm"
+        }
+      ]
+    },
+    {
+      "name": "量子位",
+      "items": [
+        {
+          "title": "钛动科技 × 腾讯云达成战略合作，用AI打开企业全球增长新空间",
+          "link": "https://www.qbitai.com/2026/11/513194.html"
+        },
+        {
+          "title": "蚂蚁灵波发布LingBot-Map 2.0，模型自己修正“空间记忆”，把地图画更准",
+          "link": "https://www.qbitai.com/2026/11/513211.html"
+        },
+        {
+          "title": "20个AI Agents组队，4天狂跑350次实验，超越ClickBench最佳公开成绩",
+          "link": "https://www.qbitai.com/2026/11/513163.html"
+        },
+        {
+          "title": "腾讯混元发布 Hy3D 3.6：高模表面更整洁、结构更清晰、刻画更细腻",
+          "link": "https://www.qbitai.com/2026/11/513155.html"
+        },
+        {
+          "title": "具身公司抱团回应：通用大模型跨维打击？没那么简单",
+          "link": "https://www.qbitai.com/2026/11/513125.html"
+        }
+      ]
+    },
+    {
+      "name": "Hacker News",
+      "items": [
+        {
+          "title": "\"What's Claude's Fursona?\" and Other Questions",
+          "link": "https://herecomesthemoon.net/2026/11/whats-claudes-fursona/"
+        },
+        {
+          "title": "AI made self-hosting fun again",
+          "link": "https://janlukas.blog/posts/ai-self-hosting"
+        },
+        {
+          "title": "Hard Drive pricing has gotten bad",
+          "link": "https://blog.ktz.me/black-friday-hard-drive-prices-are-messed-up/"
+        },
+        {
+          "title": "Kamil Khan Mumtaz: Pakistani architect, admired at home, almost invisible abroad",
+          "link": "https://worksinprogress.co/issue/the-greatest-architect-youve-never-heard-of-is-in-pakistan/"
+        },
+        {
+          "title": "YouTube Ad Punisher – Auto-reloads YouTube pages when an ad plays",
+          "link": "https://github.com/antonpictures/youtube-punisher"
+        },
+        {
+          "title": "AMD-specific fork of llama.cpp",
+          "link": "https://devnull.land/amd-specific-llama-cpp"
+        },
+        {
+          "title": "CTO of 'RansomwareHelp' indicted for wire fraud",
+          "link": "https://krebsonsecurity.com/2026/11/cto-of-ransomwarehelp-indicted-for-wire-fraud/"
+        },
+        {
+          "title": "Company Culture = Slack Emoji ÷ √Headcount",
+          "link": "https://lia.mg/posts/measuring-company-culture-with-slack-emoji/"
+        }
+      ]
+    },
+    {
+      "name": "The Verge",
+      "items": [
+        {
+          "title": "Netflix’s coziest show has made a very quiet return",
+          "link": "https://www.theverge.com/entertainment/1043489/midnight-diner-season3"
+        },
+        {
+          "title": "The Garmin Forerunner 265S is down to $300, its best price of the year",
+          "link": "https://www.theverge.com/gadgets/1042483/garmin-forerunner-265s-fitness-tracker-wearable-deal-sale-black-friday"
+        },
+        {
+          "title": "The MacBook Neo is receiving a rare $100 discount for Black Friday",
+          "link": "https://www.theverge.com/gadgets/1035932/apple-macbook-neo-black-friday-2026-deal-sale"
+        },
+        {
+          "title": "Android app developers will soon have to share their address publicly",
+          "link": "https://www.theverge.com/tech/1043228/android-play-store-google-developer-address-eu"
+        },
+        {
+          "title": "The best Black Friday deals we’ve already found",
+          "link": "https://www.theverge.com/gadgets/1028991/black-friday-best-early-deals-2026"
+        }
+      ]
+    },
+    {
+      "name": "TechCrunch",
+      "items": [
+        {
+          "title": "Nvidia hits pause on chip shipments to Southeast Asia",
+          "link": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/"
+        },
+        {
+          "title": "Is Alice Huang a spy or not?",
+          "link": "https://techcrunch.com/2026/11/26/is-alice-huang-a-spy-or-not/"
+        },
+        {
+          "title": "X finally gets parental controls after 20 years",
+          "link": "https://techcrunch.com/2026/11/26/x-finally-gets-parental-controls-after-20-years/"
+        },
+        {
+          "title": "A month with the iPhone Duo has changed how I use my phone",
+          "link": "https://techcrunch.com/2026/11/26/a-month-with-the-iphone-duo-has-changed-how-i-use-my-phone/"
+        },
+        {
+          "title": "Grand Theft Auto VI proves why efficiency isn’t a virtue",
+          "link": "https://techcrunch.com/2026/11/26/as-anthropic-ipos-grand-theft-auto-vi-proves-why-efficiency-isnt-a-virtue/"
+        }
+      ]
+    }
+  ]
+}
