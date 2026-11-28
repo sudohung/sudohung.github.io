@@ -227,21 +227,21 @@ flowchart TB
 
     <section id="handshake">
       <h2><span class="num">04</span>握手时序</h2>
-      <p class="lead">挑战应答 + RSA-OAEP 包裹 AES-256-GCM 会话密钥 + 公钥指纹固定。</p>
-      <p class="figure-label">图 4：Peer 建连与身份验证</p>
+      <p class="lead">挑战应答 + RSA-OAEP/AES-GCM 内层身份认证 + 可选 PSK AES-256-GCM 外层门禁 + 公钥指纹固定。</p>
+      <p class="figure-label">图 4：Peer 建连、PSK 门禁与身份验证</p>
       <div class="diagram">
         <div class="mermaid">
 sequenceDiagram
     participant A as X-A 主动方
     participant B as X-B 被连方
-    A->>B: hello(nodeId, protocols, features)
-    B->>A: challenge(nonceA, TTL, features)
-    Note over A: 生成 nonceB<br/>RSA-OAEP 包裹 AES-256-GCM key
-    A->>B: auth(sealed: nonceB / pubKeyA / nonceA)
-    Note over B: 解封并校验 nonceA 一次性<br/>校验公钥指纹与配置一致
-    B->>A: auth_ok(sealed: nonceA / nonceB)
-    Note over A: 校验双方 nonce 与私钥持有
-    Note over A,B: ACTIVE<br/>epoch = hash(nonceA, nonceB)
+    A->>B: hello(nodeId, protocols, features, pskId?)
+    B->>A: challenge(nonceA, TTL, features, pskId?)
+    Note over A: 生成 nonceB<br/>RSA-OAEP 包裹 AES-256-GCM key<br/>PSK key = HKDF-SHA256(PSK, nonceA, role, pskId)
+    A->>B: PSK-AEAD auth(inner RSA sealed: nonceB/pubKeyA/nonceA)
+    Note over B: PSK 外层解密/认证失败即拒绝<br/>再解 RSA、校验 nonceA 一次性与公钥指纹
+    B->>A: PSK-AEAD auth_ok(inner RSA sealed: nonceA/nonceB)
+    Note over A: PSK 解密 + RSA 解密<br/>校验双方 nonce 与私钥持有
+    Note over A,B: ACTIVE<br/>epoch = hash(nonceA, nonceB)<br/>PSK 不一致则不进入 ACTIVE
     A->>B: peer.describe(summary, hash, version)
     B->>A: peer.describe.ack(hash)
     B->>A: peer.describe(summary, hash, version)
@@ -251,7 +251,11 @@ sequenceDiagram
     Note over A,B: READY，允许 session.open / prompt
         </div>
       </div>
-      <div class="callout warn"><strong>安全要点</strong>：RSA 不能直接加密变长业务数据；实际只包裹 AES-GCM key。nonce 一次性、30s TTL、Peer 级限频；指纹不匹配立即断开。</div>
+      <div class="callout warn"><strong>安全要点</strong>：RSA 不能直接加密变长业务数据，实际只包裹 AES-GCM key。配置 <code>peerPsk</code> 时，<code>auth/auth_ok</code> 外层再加 PSK AES-256-GCM；两端 PSK 或 <code>pskId</code> 不一致直接拒绝，不允许明文降级。nonce 一次性、30s TTL、Peer 级限频；指纹不匹配立即断开。</div>
+      <pre><code>{
+  "peerPsk": "same-random-secret-on-both-nodes",
+  "peerPskId": "prod-2026-01"
+}</code></pre>
     </section>
 
     <section id="link-state">
