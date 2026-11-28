@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X SuperAgent · xagent.md 与远端 Peer 智能路由</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f7fb;--panel:#fff;--ink:#1a1d27;--muted:#5b6172;--line:#e3e6ef;--brand:#4c5bd4;--brand2:#7a5cf0;--accent:#00a37a;--warn:#c2410c;--code-bg:#11141d;--code-ink:#d9e0f0;--radius:14px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#172a3f 0%,#2b3f7a 45%,#4c5bd4 100%);color:#fff;padding:64px 24px 56px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:840px;color:#d8dcf5;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13.5px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}ul,ol{margin:10px 0;padding-left:22px}li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:640px}
+  .figure-label{font-size:12px;color:var(--muted);margin:6px 0 -6px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2}section{padding:22px 18px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Design · v0.1 · 2026-11-28</div>
+    <h1>X SuperAgent · xagent.md 与远端 Peer 智能路由</h1>
+    <p>X 用 xagent.md 描述自身职能；握手后第一组消息交换节点摘要；路由保留 tag 精确匹配，多命中时由独立的 PeerDecisionModule 调用内部 x-router LLM 选择远端 peer。</p>
+    <div class="tags">
+      <span class="tag">xagent.md</span>
+      <span class="tag">peer.describe</span>
+      <span class="tag">Ready Gating</span>
+      <span class="tag">PeerDecisionModule</span>
+      <span class="tag">x-router internal</span>
+      <span class="tag">Tag Routing</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <a href="#s1">1. 设计结论</a>
+    <a href="#s2">2. 总体架构 <span class="pill">图1</span></a>
+    <a href="#s3">3. xagent.md 加载 <span class="pill">图2</span></a>
+    <a href="#s4">4. describe 握手 <span class="pill">图3/4</span></a>
+    <a href="#s5">5. 路由流水线 <span class="pill">图5</span></a>
+    <a href="#s6">6. 决策模块 <span class="pill">图6</span></a>
+    <a href="#s7">7. 热更新与重连 <span class="pill">图7</span></a>
+    <a href="#s8">8. 数据与配置</a>
+    <a href="#s9">9. 安全与测试</a>
+  </nav>
+
+  <main>
+    <section id="s1">
+      <h2><span class="num">01</span>设计结论</h2>
+      <div class="cards">
+        <div class="card"><h4>节点级描述</h4><p>xagent.md 代表整个 X SuperAgent，不是单个子 agent；默认只共享 summary。</p></div>
+        <div class="card"><h4>先 describe 后业务</h4><p>握手 ACTIVE 后第一组消息是 peer.describe；ready 前拒绝 session.open/prompt。</p></div>
+        <div class="card"><h4>tag 路由保留</h4><p>本地/远端精确 tags 继续生效；远端多命中时先 LLM，再最小负载。</p></div>
+        <div class="card"><h4>独立决策模块</h4><p>PeerDecisionModule 可替换；当前用固定 x-router profile。</p></div>
+        <div class="card"><h4>LLM 只选远端</h4><p>本地选择仍由规则完成；LLM 不参与本地决策。</p></div>
+        <div class="card"><h4>internal profile</h4><p>x-router 为 internal + readOnly：不广播、不参与普通路由。</p></div>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>总体架构</h2>
+      <p class="figure-label">图 1：X SuperAgent 路由与决策模块</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph HOST[X SuperAgent]
+        XF[xagent.md] --> LD[Local Descriptor]
+        subgraph CORE[X Core]
+            SM[SessionManager] --> RT[Router]
+            RT --> PD[PeerDecisionModule]
+            PD --> AP[AgentPool]
+            AP --> XR[x-router<br/>internal / readOnly]
+            RT --> REG[CapabilityRegistry]
+            REG --> DIR[PeerDirectory]
+            SM --> AP
+        end
+        PL[PeerLink] <--> DIR
+        PL <--> REMOTE[远端 X]
+        LD --> PL
+        PL --> DIR
+    end
+        </div>
+      </div>
+      <div class="callout">PeerDecisionModule 不经过 SessionManager/Router，避免递归选路与生成用户会话；只通过 AgentPool 显式获取 x-router。</div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>xagent.md 加载</h2>
+      <p class="figure-label">图 2：启动加载、校验、降级与热更新</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[启动] --> B[加载 x.json]
+    B --> C{xagent.md 存在?}
+    C -->|是| D[解析 frontmatter + body]
+    D --> E{Schema 校验通过?}
+    E -->|是| F[生成 summary descriptor<br/>version + hash]
+    E -->|否| G[降级 descriptor<br/>告警或拒绝启动]
+    C -->|否| G
+    F --> H[构建 AgentPool<br/>含 internal x-router]
+    G --> H
+    H --> I[启动 Peer / 交换 describe]
+    J[文件变化] --> K[重新校验]
+    K -->|合法| L[version+1 / hash 更新]
+    L --> M[向 ACTIVE peer 推送 describe]
+    K -->|非法| N[保留旧版本并告警]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>字段</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>description / summary</td><td>节点一句话职能</td></tr>
+          <tr><td>tags</td><td>用于 tag 路由</td></tr>
+          <tr><td>domains</td><td>能力域 + 示例，供 LLM 语义选择</td></tr>
+          <tr><td>when_to_use / not_for</td><td>正反例边界</td></tr>
+          <tr><td>limits</td><td>并发、readOnly 等约束</td></tr>
+          <tr><td>share</td><td>固定 summary；正文不外发</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>describe 握手与状态</h2>
+      <p class="figure-label">图 3：握手后的第一组业务消息</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A
+    participant B as X-B
+    A->>B: challenge / auth / auth_ok（已有握手）
+    Note over A,B: ACTIVE
+    A->>B: peer.describe(version, hash, summary)
+    B->>A: peer.describe.ack(hash)
+    B->>A: peer.describe(version, hash, summary)
+    A->>B: peer.describe.ack(hash)
+    A->>B: capability.update(profiles)
+    B->>A: capability.update(profiles)
+    Note over A,B: READY，允许 session.open / prompt
+        </div>
+      </div>
+      <p class="figure-label">图 4：Peer describe 状态机</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> WAITING
+    WAITING --> READY: describe 合法 + ack
+    WAITING --> DEGRADED: 超时 / 非法
+    WAITING --> LEGACY: 对端不支持 describe
+    READY --> WAITING: 重连
+    READY --> DEGRADED: 版本过期 / 校验失败
+    DEGRADED --> WAITING: 重试
+    LEGACY --> WAITING: 对端升级
+        </div>
+      </div>
+      <ul>
+        <li>未 READY 时 session.open/prompt 返回 <code>PEER_NOT_READY</code>（可重试）。</li>
+        <li>describe 超时 5s、重试 3 次；失败只影响 LLM 路由，不影响 tag 路由（若允许 legacy）。</li>
+        <li>重连重新交换；hash 相同只回 ack。</li>
+      </ul>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>路由流水线</h2>
+      <p class="figure-label">图 5：显式、tag、LLM 与兜底</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[消息] --> B{显式 target?}
+    B -->|是| C[直接执行]
+    B -->|否| D{本地 profile 精确 tags?}
+    D -->|是| E[本地执行]
+    D -->|否| F{远端精确 tags?}
+    F -->|唯一命中| G[路由到 peer]
+    F -->|多个命中| H[PeerDecisionModule 在命中集合中选]
+    H --> I{置信度达标?}
+    I -->|是| G
+    I -->|否| J[命中集合最小负载]
+    F -->|无命中| K[过滤 ready/healthy/policy 远端候选]
+    K --> L[PeerDecisionModule 语义选择]
+    L --> M{有有效结果?}
+    M -->|是| G
+    M -->|否| N[tag 重合度 / 最小负载 / 回问用户]
+        </div>
+      </div>
+      <div class="callout warn">LLM 永远不选本地；本地 tag 命中优先于远端；多命中时先 LLM，再最小负载。</div>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>决策模块</h2>
+      <p class="figure-label">图 6：AgentPoolDecisionModule 执行与兜底</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant R as Router
+    participant D as PeerDecisionModule
+    participant P as AgentPool
+    participant O as opencode(x-router)
+    participant DB as decision_audit
+    R->>D: select(task, candidates, timeout)
+    D->>P: acquire(profileId=x-router, includeInternal)
+    P->>O: createSession + prompt(JSON)
+    O-->>D: message.part / session.idle
+    D->>D: parse + validate JSON
+    alt 有效且置信度达标
+        D->>DB: write decision
+        D-->>R: {peerId, confidence, reason}
+    else 超时 / 非法 / 低置信度
+        D->>O: abort
+        D->>DB: write fallback reason
+        D-->>R: null
+        R-->>R: tag / 最小负载兜底
+    end
+    D->>P: release lease
+        </div>
+      </div>
+      <pre><code>interface PeerDecisionModule {
+  select(input: PeerDecisionInput): Promise&lt;PeerDecision | null&gt;;
+}
+
+interface PeerDecision {
+  peerId: string;
+  confidence: number;
+  reason: string;
+}</code></pre>
+      <table>
+        <thead><tr><th>x-router 约束</th><th>行为</th></tr></thead>
+        <tbody>
+          <tr><td>internal:true</td><td>不出现在 capability.update，不参与普通路由</td></tr>
+          <tr><td>readOnly:true</td><td>只生成决策文本，不执行写操作</td></tr>
+          <tr><td>maxConcurrency</td><td>建议 1–2，避免决策抢占业务池</td></tr>
+          <tr><td>超时</td><td>默认 4s；失败回退 tag/最小负载</td></tr>
+          <tr><td>审计</td><td>记录候选、结果、置信度、耗时、原因</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>热更新与重连</h2>
+      <p class="figure-label">图 7：xagent.md 更新与重连的一致性</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A[xagent.md 变更] --> B{校验通过?}
+    B -->|是| C[version+1 / hash 更新]
+    C --> D[向所有 ACTIVE peer 推送 describe]
+    D --> E[收到 ack 或超时重试]
+    B -->|否| F[保留旧版本 + 告警]
+    G[链路重连] --> H[握手 ACTIVE]
+    H --> I[交换 describe / knownHash]
+    I --> J{hash 相同?}
+    J -->|是| K[仅 ack，不重复传输]
+    J -->|否| L[发送完整 summary descriptor]
+        </div>
+      </div>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>数据与配置</h2>
+      <pre><code>{
+  "agentFile": "config/xagent.md",
+  "routing": {
+    "peerSelection": {
+      "provider": "agent-pool",
+      "decisionProfile": "x-router",
+      "minConfidence": 0.6,
+      "timeoutMs": 4000,
+      "maxCandidates": 8,
+      "allowTagFallback": true
+    }
+  }
+}</code></pre>
+      <pre><code>{
+  "id": "x-router",
+  "instanceId": "oc-1",
+  "baseUrl": "http://127.0.0.1:4097",
+  "model": "fast-model",
+  "tags": ["internal", "router"],
+  "maxConcurrency": 1,
+  "internal": true,
+  "readOnly": true,
+  "enabled": true
+}</code></pre>
+      <table>
+        <thead><tr><th>数据</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>peer_descriptors</td><td>peer 摘要、version/hash、状态</td></tr>
+          <tr><td>decision_audit</td><td>决策输入摘要、候选、结果、耗时</td></tr>
+          <tr><td>PeerDirectory</td><td>descriptor + capability + health + load</td></tr>
+          <tr><td>Local Descriptor</td><td>启动加载，热更新版本</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>安全、兼容与测试</h2>
+      <div class="cards">
+        <div class="card"><h4>不可信描述</h4><p>限长、schema、控制字符过滤；只用于路由，不作为授权。</p></div>
+        <div class="card"><h4>防提示注入</h4><p>descriptor 用分隔符作为数据传入，不拼 system prompt。</p></div>
+        <div class="card"><h4>只共享 summary</h4><p>正文、密钥、内部路径不出本机。</p></div>
+        <div class="card"><h4>无签名/白名单</h4><p>按当前决策；policy 仍决定能否调用。</p></div>
+        <div class="card"><h4>legacy peer</h4><p>不参与 LLM，仅允许 tag 路由（配置控制）。</p></div>
+        <div class="card"><h4>模块可替换</h4><p>AgentPool / HTTP LLM / Embedding / Composite。</p></div>
+      </div>
+      <table>
+        <thead><tr><th>测试类型</th><th>覆盖</th></tr></thead>
+        <tbody>
+          <tr><td>文件</td><td>解析、schema、缺失降级、热更新、summary 过滤</td></tr>
+          <tr><td>协议</td><td>describe 顺序、ack、ready gating、超时、legacy、重连</td></tr>
+          <tr><td>决策</td><td>合法、非法 peerId、低置信度、超时、无候选、提示注入</td></tr>
+          <tr><td>路由</td><td>tag 唯一/多命中/无命中；LLM 失败兜底；本地优先</td></tr>
+          <tr><td>内部 profile</td><td>不广播、不参与普通路由、可被决策显式获取</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">验收：握手后先 describe；ready 前不接任务；多 tag 命中先 LLM 再最小负载；x-router 不出现在 peer 能力列表；替换决策实现不影响 Router/协议。</div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  X SuperAgent Peer Routing Design · v0.1 · 2026-11-28 ·
+  <a href="design-v0.3.html">X 完整设计 v0.3</a> ·
+  <a href="peer-reliability.html">Peer 可靠性</a> ·
+  <a href="agentbot-integration.html">agentBot 接入</a> ·
+  <a href="../index.html">站点首页</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
