@@ -1,0 +1,248 @@
+{
+  "date": "2026-11-28",
+  "time": "1400",
+  "label": "资讯快报",
+  "total": 41,
+  "sources": [
+    "爱范儿",
+    "少数派",
+    "IT之家",
+    "量子位",
+    "Hacker News",
+    "The Verge",
+    "TechCrunch"
+  ],
+  "highlights": [
+    {
+      "title": "德系最大 SUV 来了！奥迪 Q9 国内首秀，车长超 5 米 3，还有一台大 V6丨广州车展",
+      "link": "https://www.ifanr.com/1696001?utm_source=rss&utm_medium=rss&utm_campaign",
+      "source": "爱范儿"
+    },
+    {
+      "title": "「黑五」值得买：不容错过的数码硬件优惠",
+      "link": "https://sspai.com/post/119651",
+      "source": "少数派"
+    },
+    {
+      "title": "英特尔 Gaudi2 加速卡逆袭：软件优化后部分 AI 性能超英伟达 H100",
+      "link": "https://www.ithome.com/1/033/841.htm",
+      "source": "IT之家"
+    },
+    {
+      "title": "人形机器人开发者集合！众擎开放大小脑，10亿产业级生态支持计划也来了",
+      "link": "https://www.qbitai.com/2026/11/513352.html",
+      "source": "量子位"
+    },
+    {
+      "title": "Unkernel: Real Linux kernel, compiled to WebAssembly",
+      "link": "https://unkernel.dev",
+      "source": "Hacker News"
+    },
+    {
+      "title": "The M5 MacBook Air just got its biggest discount since Apple raised the price",
+      "link": "https://www.theverge.com/gadgets/1044771/m5-macbook-air-black-friday-2026-deal-sale",
+      "source": "The Verge"
+    }
+  ],
+  "sections": [
+    {
+      "name": "爱范儿",
+      "items": [
+        {
+          "title": "德系最大 SUV 来了！奥迪 Q9 国内首秀，车长超 5 米 3，还有一台大 V6丨广州车展",
+          "link": "https://www.ifanr.com/1696001?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "24.99 万元起！宝马新世代 i3 正式上市，纯电续航高达 1028km丨广州车展",
+          "link": "https://www.ifanr.com/1695987?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "9.69 万元，奇瑞 QQ3 变身一辆可以开咖啡馆的「QQ 啡车」丨广州车展",
+          "link": "https://www.ifanr.com/1695964?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "从「中国特供」变全球旗舰，搭载 Momenta 智驾的本田冠道来了｜广州车展",
+          "link": "https://www.ifanr.com/1695948?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "启源 Q06 迎来大升级！长安发布天枢领航 Ultra 2.0，明年 1 月推车位到车位｜广州车展",
+          "link": "https://www.ifanr.com/1695936?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "捷途纵横 R700 发布：华为乾崑智驾配大梁，家用硬派两手抓｜广州车展",
+          "link": "https://www.ifanr.com/1695926?utm_source=rss&utm_medium=rss&utm_campaign"
+        }
+      ]
+    },
+    {
+      "name": "少数派",
+      "items": [
+        {
+          "title": "「黑五」值得买：不容错过的数码硬件优惠",
+          "link": "https://sspai.com/post/119651"
+        },
+        {
+          "title": "本月玩什么｜GTA VI、塞尔达传说 时之笛、魔兽世界：无限",
+          "link": "https://sspai.com/post/119686"
+        },
+        {
+          "title": "本周看什么 | 最近值得一看的 8 部作品",
+          "link": "https://sspai.com/post/119658"
+        },
+        {
+          "title": "「黑五」值得买：不容错过的 App 和服务优惠",
+          "link": "https://sspai.com/post/119601"
+        },
+        {
+          "title": "派早报：1Password 确认内部系统遭入侵等",
+          "link": "https://sspai.com/post/119632"
+        },
+        {
+          "title": "App+1｜Agora：开源、易用、好用，给 Android 用户的 LLM 聊天工具",
+          "link": "https://sspai.com/post/116773"
+        }
+      ]
+    },
+    {
+      "name": "IT之家",
+      "items": [
+        {
+          "title": "英特尔 Gaudi2 加速卡逆袭：软件优化后部分 AI 性能超英伟达 H100",
+          "link": "https://www.ithome.com/1/033/841.htm"
+        },
+        {
+          "title": "广电总局通报网络视听治理典型案例：侵权盗版、低俗微短剧、AI 魔改三类问题被点名",
+          "link": "https://www.ithome.com/1/033/840.htm"
+        },
+        {
+          "title": "不眠不休的芯片设计师：台积电推出 ADK 套件，用 AI 设计下一代芯片",
+          "link": "https://www.ithome.com/1/033/838.htm"
+        },
+        {
+          "title": "美国 ITC 认定三星侵犯日企 Maxell 相机专利，Galaxy S25 系列在美或遭进口禁令",
+          "link": "https://www.ithome.com/1/033/836.htm"
+        },
+        {
+          "title": "英伟达掏 2.9 亿美元，了结历时 8 年的挖矿显卡官司",
+          "link": "https://www.ithome.com/1/033/835.htm"
+        },
+        {
+          "title": "小米 18 标准版开放预约，预计下周官宣预热",
+          "link": "https://www.ithome.com/1/033/834.htm"
+        }
+      ]
+    },
+    {
+      "name": "量子位",
+      "items": [
+        {
+          "title": "人形机器人开发者集合！众擎开放大小脑，10亿产业级生态支持计划也来了",
+          "link": "https://www.qbitai.com/2026/11/513352.html"
+        },
+        {
+          "title": "全国首批首家！商汤大装置获Token工厂智算能力最高评级",
+          "link": "https://www.qbitai.com/2026/11/513346.html"
+        },
+        {
+          "title": "韦东奕再获大奖！攻克近140年数学难题，获两位院士共同提名",
+          "link": "https://www.qbitai.com/2026/11/513320.html"
+        },
+        {
+          "title": "DeepSeek APP突然更新账单，网友：要收费了？",
+          "link": "https://www.qbitai.com/2026/11/513305.html"
+        },
+        {
+          "title": "刚刚，首个带跨任务空间记忆的原生基模开源！机器人端侧就能跑",
+          "link": "https://www.qbitai.com/2026/11/513227.html"
+        }
+      ]
+    },
+    {
+      "name": "Hacker News",
+      "items": [
+        {
+          "title": "Unkernel: Real Linux kernel, compiled to WebAssembly",
+          "link": "https://unkernel.dev"
+        },
+        {
+          "title": "Google's DeepCrossAttention achieves comparable model quality up to 3x faster",
+          "link": "https://research.google/blog/supercharging-transformer-residual-connections/"
+        },
+        {
+          "title": "The Balatro Timeline",
+          "link": "https://localthunk.com/blog/balatro-timeline-3aarh"
+        },
+        {
+          "title": "GPT 6.2 Astra Solves a Historical Mystery",
+          "link": "https://generativehistory.substack.com/p/gpt-62-astra-solves-a-historical"
+        },
+        {
+          "title": "Credit card skimming scripts using WebRTC found on popular shopping sites",
+          "link": "https://www.infohawk.com/news/2026-11-27-black-friday-webrtc-skimmer"
+        },
+        {
+          "title": "Convex skills send the user's app idea to a remote server without telling them",
+          "link": "https://github.com/convex/convex-backend-skill/issues/64"
+        },
+        {
+          "title": "Paolo Soleri built a utopian eco-city in the Arizona desert",
+          "link": "https://www.worldofinteriors.com/story/paolo-soleri-arconsati-arizona"
+        },
+        {
+          "title": "Sydney Fire Ant Infestation",
+          "link": "https://www.abc.net.au/news/2026-11-25/nsw-government-ramps-up-efforts-to-respond-to-fire-ants-/107424812"
+        }
+      ]
+    },
+    {
+      "name": "The Verge",
+      "items": [
+        {
+          "title": "The M5 MacBook Air just got its biggest discount since Apple raised the price",
+          "link": "https://www.theverge.com/gadgets/1044771/m5-macbook-air-black-friday-2026-deal-sale"
+        },
+        {
+          "title": "The absolute best Black Friday deals you can still get",
+          "link": "https://www.theverge.com/gadgets/1039190/best-black-friday-2026-deals-tech-gadgets-gift-ideas"
+        },
+        {
+          "title": "We found 60-odd Black Friday deals we love for $100 or less",
+          "link": "https://www.theverge.com/gadgets/1043445/black-friday-best-cheap-tech-deals-under-100-2026"
+        },
+        {
+          "title": "This purple electric Chinese minivan can go up to 559 miles on a charge",
+          "link": "https://www.theverge.com/transportation/1044706/this-purple-electric-chinese-minivan-can-go-up-to-559-miles-on-a-charge"
+        },
+        {
+          "title": "The best Black Friday deals you can still get on AirPods, Macs, and other Apple gear",
+          "link": "https://www.theverge.com/gadgets/1043935/best-black-friday-apple-deals-2026"
+        }
+      ]
+    },
+    {
+      "name": "TechCrunch",
+      "items": [
+        {
+          "title": "Nvidia hits pause on chip shipments to Southeast Asia",
+          "link": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/"
+        },
+        {
+          "title": "Is Alice Huang a spy or not?",
+          "link": "https://techcrunch.com/2026/11/26/is-alice-huang-a-spy-or-not/"
+        },
+        {
+          "title": "X finally gets parental controls after 20 years",
+          "link": "https://techcrunch.com/2026/11/26/x-finally-gets-parental-controls-after-20-years/"
+        },
+        {
+          "title": "A month with the iPhone Duo has changed how I use my phone",
+          "link": "https://techcrunch.com/2026/11/26/a-month-with-the-iphone-duo-has-changed-how-i-use-my-phone/"
+        },
+        {
+          "title": "Grand Theft Auto VI proves why efficiency isn’t a virtue",
+          "link": "https://techcrunch.com/2026/11/26/as-anthropic-ipos-grand-theft-auto-vi-proves-why-efficiency-isnt-a-virtue/"
+        }
+      ]
+    }
+  ]
+}
