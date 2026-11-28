@@ -77,6 +77,7 @@
     <a href="#s2">2. 目标与原则</a>
     <a href="#s3">3. 总体架构 <span class="pill">图1</span></a>
     <a href="#s4">4. 部署形态 <span class="pill">图2</span></a>
+    <a href="#s4b">4.5 单实例架构 <span class="pill">图2b/2c</span></a>
     <a href="#s5">5. 领域模型 <span class="pill">图3</span></a>
     <a href="#s6">6. 连接协议 v2 <span class="pill">图4/5</span></a>
     <a href="#s7">7. 会话与调度 <span class="pill">图6/7/8</span></a>
@@ -172,6 +173,101 @@ flowchart LR
     end
         </div>
       </div>
+    </section>
+
+
+    <section id="s4b">
+      <h2><span class="num">04.5</span>单实例架构与生命周期</h2>
+      <p class="lead">一个 X 实例 = 一个进程内的一套 X Core + 一组 AgentProfile/InstanceRuntime + 一张 SQLite + 一个对外监听端口；Peer、Web、Feishu、MCP 都是可选接入面。</p>
+
+      <p class="figure-label">图 2b：单个 X 实例的架构形态</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph CH[接入 / Channel]
+        W[Web / HTTP / WS :8788]
+        P[Peer Gateway /peer]
+        F[FeishuAdapter 可选]
+        M[MCP / API Adapter 可选]
+    end
+    subgraph CORE[X Core]
+        CM[ChannelManager]
+        SM[SessionManager + TurnQueue]
+        RT[Router + CapabilityRegistry]
+        SCH[Scheduler + TenantPolicy]
+        AP[AgentPool]
+        EB[EventBus]
+        REC[Recovery / Policy]
+        CM --> SM
+        SM --> RT
+        RT --> SCH
+        SCH --> AP
+        SM --> EB
+        SM --- REC
+    end
+    subgraph RUN[Agent 运行时]
+        PR[AgentProfile x N]
+        IR[InstanceRuntime x M]
+        PR --> IR
+    end
+    subgraph CONN[连接层 可选]
+        PL[PeerLink / epoch / outbox / inbox]
+        POL[PeerPolicy]
+        PL --- POL
+    end
+    DB[(SQLite<br/>sessions / turns / messages<br/>outbox / inbox / pending / audit)]
+    OC[opencode server 内网 :4097]
+    W --> CM
+    F --> CM
+    M --> CM
+    P --> CM
+    AP --> PR
+    IR --> OC
+    PL <--> P
+    PL <--> SM
+    SM --> DB
+    AP --- DB
+    EB --> W
+    EB --> F
+    EB --> P
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card"><h4>最小实例</h4><p>X Core + 1 个 profile + SQLite + Web；本机多 agent 调度器。</p></div>
+        <div class="card"><h4>标准实例</h4><p>X Core + 多 profile + 多个 peer + Web/API；联邦中的一个节点。</p></div>
+        <div class="card"><h4>内嵌实例</h4><p>X Core 跑在 agentBot 内 + FeishuAdapter + peer 端口；应用即节点。</p></div>
+      </div>
+
+      <p class="figure-label">图 2c：单实例启动、停止与恢复</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[加载配置 / 密钥] --> B[打开 SQLite + 迁移]
+    B --> C[构建 AgentPool / InstanceRuntime / 健康探测]
+    C --> D[启动 PeerManager 可选]
+    D --> E[启动 Channel Adapter]
+    E --> F[恢复未完成 session / turn]
+    F --> G[运行]
+    G --> H{收到停止信号?}
+    H -->|否| G
+    H -->|是| I[drain peer]
+    I --> J[停止接收新 turn]
+    J --> K[等待 / 取消在途 turn]
+    K --> L[关闭数据库与运行时]
+        </div>
+      </div>
+
+      <table>
+        <thead><tr><th>边界</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>对外端口</td><td>默认仅 8788：Web / HTTP / WS / <code>/peer</code> 复用</td></tr>
+          <tr><td>内网后端</td><td>opencode 4097/4096 不等同于 X 端口，不对外暴露</td></tr>
+          <tr><td>状态所有权</td><td>SQLite 是单实例唯一事实源；peer 不共享数据库</td></tr>
+          <tr><td>执行所有权</td><td>opencode 拥有 LLM 上下文；X 持久化 agentSessionId 与消息</td></tr>
+          <tr><td>可选组件</td><td>Peer、FeishuAdapter、MCP/API、Web 均可按部署形态裁剪</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <section id="s5">
