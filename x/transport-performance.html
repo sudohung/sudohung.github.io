@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X 连接传输性能优化 v0.2 · 聚合 / Worker / MessagePack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f7fb;--panel:#fff;--ink:#1a1d27;--muted:#5b6172;--line:#e3e6ef;--brand:#4c5bd4;--brand2:#7a5cf0;--accent:#00a37a;--warn:#c2410c;--code-bg:#11141d;--code-ink:#d9e0f0;--radius:14px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#1c2a4a 0%,#303a7a 45%,#4c5bd4 100%);color:#fff;padding:64px 24px 56px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:840px;color:#d8dcf5;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13.5px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}ul,ol{margin:10px 0;padding-left:22px}li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:620px}
+  .figure-label{font-size:12px;color:var(--muted);margin:6px 0 -6px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2}section{padding:22px 18px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Performance Design · v0.2 · 2026-11-28</div>
+    <h1>X 连接传输性能优化</h1>
+    <p>chunk 100ms/64KB 聚合、单持久化 Worker（500ms tick / 30s acked 清理）、ack 水位、紧凑数据帧、permessage-deflate 与 MessagePack。</p>
+    <div class="tags">
+      <span class="tag">Chunk Batch</span>
+      <span class="tag">Persistence Worker</span>
+      <span class="tag">Ack Watermark</span>
+      <span class="tag">Index + Cleanup</span>
+      <span class="tag">permessage-deflate</span>
+      <span class="tag">MessagePack</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <a href="#s1">1. 目标与问题</a>
+    <a href="#s2">2. 总体架构 <span class="pill">图1</span></a>
+    <a href="#s3">3. Chunk 聚合 <span class="pill">图2</span></a>
+    <a href="#s4">4. 持久化 Worker <span class="pill">图3</span></a>
+    <a href="#s5">5. Ack 水位 <span class="pill">图4</span></a>
+    <a href="#s6">6. MessagePack / 压缩 <span class="pill">图5</span></a>
+    <a href="#s7">7. 索引与清理 <span class="pill">图6</span></a>
+    <a href="#s8">8. 配置与语义</a>
+    <a href="#s9">9. 测试与验收</a>
+  </nav>
+
+  <main>
+    <section id="s1">
+      <h2><span class="num">01</span>目标与问题</h2>
+      <p class="lead">先减少消息/DB 写入次数，再压缩单条大小，最后用压缩/二进制进一步节省带宽。</p>
+      <div class="cards">
+        <div class="card"><h4>当前单 chunk</h4><p>信封 409–419 B，ack 362 B；单次往返约 780 B。</p></div>
+        <div class="card"><h4>SQLite ack</h4><p><code>seq &lt;= ?</code> 累积更新 O(n²) + FULL sync；2000 条约 6.5s。</p></div>
+        <div class="card"><h4>接收端</h4><p>每 chunk 一次 inbound_seq 查询 + upsert。</p></div>
+        <div class="card"><h4>目标</h4><p>消息/DB 写入下降 10x+；ack ≥10k/s；1KB 级协议开销 ≤20%。</p></div>
+      </div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>总体架构</h2>
+      <p class="figure-label">图 1：主线程 + 单持久化 Worker（参考 Redis 主线程/后台周期任务）</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph MAIN[主线程]
+        AG[ChunkAggregator<br/>100ms / 64KB] --> OB[OutboxBuffer<br/>pending / ack 水位 / inbound 水位]
+        OB --> PL[PeerLink<br/>WebSocket]
+        ACK[收到 ack / batch] --> OB
+        API[API / Admin] --> DB[(SQLite WAL<br/>synchronous=NORMAL)]
+    end
+    subgraph WORKER[Persistence Worker<br/>单线程 500ms tick]
+        Q[消息队列] --> TX[单事务 flush]
+        TX --> DB
+        CL[acked 清理 / WAL checkpoint<br/>每 60 tick]
+        CL --> DB
+    end
+    OB -. postMessage .-> Q
+    PL <--> PEER[远端 X]
+    DB -. 只读连接 .-> API
+        </div>
+      </div>
+      <div class="callout">热路径只写内存；SQLite 热表写入集中在 Worker；critical（done/error/closed）走立即 flush 通道。</div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>Chunk 聚合</h2>
+      <p class="figure-label">图 2：100ms / 64KB / 控制事件前 flush</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A[text / reasoning 事件] --> B[ChunkAggregator<br/>按 session+turn]
+    B --> C{100ms 到?}
+    B --> D{64KB 到?}
+    B --> E{控制事件?}
+    C -->|是| F[flush batch]
+    D -->|是| F
+    E -->|是| F
+    F --> G[分配 turn 内 seq]
+    G --> H[chunk.batch → OutboxBuffer → PeerLink]
+    E -->|question/permission/done/error| I[先 flush 文本 batch]
+    I --> J[发送控制事件]
+        </div>
+      </div>
+      <ul>
+        <li>一个 batch 一个 seq、一个 ack、一行 outbox。</li>
+        <li>控制事件与 batch 共享 turn 内单调 seq，保证顺序。</li>
+        <li>对端不支持 batch 时回退逐 chunk。</li>
+      </ul>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>持久化 Worker</h2>
+      <p class="figure-label">图 3：500ms tick、critical flush、30s 清理</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    T[Worker tick 500ms] --> D[合并主线程增量]
+    D --> TX[单事务写 peer_outbox / ack 水位 / inbound 水位]
+    TX --> C{tick % 60 == 0?}
+    C -->|是| CL[DELETE acked < cutoff LIMIT 5000]
+    CL --> W[WAL checkpoint]
+    C -->|否| E[返回 durable 水位]
+    W --> E
+    K[critical: done / error / closed] --> F[flushCritical 立即执行]
+    F --> S[等待 durable 后发送]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>参数</th><th>默认</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>workerTickMs</td><td>500</td><td>Worker 周期</td></tr>
+          <tr><td>flushEveryTicks</td><td>1</td><td>每 tick 落盘；可调 2 = 1s</td></tr>
+          <tr><td>criticalFlush</td><td>true</td><td>done/error 发送前同步 flush</td></tr>
+          <tr><td>synchronous</td><td>NORMAL</td><td>WAL 下兼顾吞吐与恢复</td></tr>
+          <tr><td>ackedCleanupEveryTicks</td><td>60</td><td>30s 清理一次</td></tr>
+          <tr><td>ackedRetentionMs</td><td>3600000</td><td>acked 保留 1h</td></tr>
+          <tr><td>cleanupLimit</td><td>5000</td><td>单次删除上限</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>Ack 水位</h2>
+      <p class="figure-label">图 4：累计确认、outbox 清理与 inbound 去重</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant B as Executor B
+    participant A as Receiver A
+    participant W as Worker B
+    B->>A: chunk.batch(seq=n)
+    A->>A: inbound 水位 = n（内存）
+    A-->>B: chunk_ack(n / watermark)
+    B->>B: ack 水位 = max(current, n)
+    W->>W: 每 500ms 批量 upsert 水位
+    W->>W: 每 30s 删除 acked 旧行
+        </div>
+      </div>
+      <ul>
+        <li>WebSocket 有序；ack 水位可累计确认，不再逐行 <code>seq &lt;= ?</code>。</li>
+        <li>检测到 seq 缺口时暂不推进水位，等待补齐/重放。</li>
+        <li>chunk 崩溃窗口内可能重复展示；final 消息按 turn 幂等。</li>
+      </ul>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>MessagePack 与压缩</h2>
+      <p class="figure-label">图 5：feature 协商与数据帧编码</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    H[hello: features] --> F{双方支持 msgpack?}
+    F -->|是| M[MessagePack binary frame<br/>[v,k,s,u,n,p,b]]
+    F -->|否| J[compact JSON 数据帧]
+    M --> D{双方支持 deflate?}
+    J --> D
+    D -->|是| Z[permessage-deflate<br/>threshold 1KB]
+    D -->|否| W[直接发送]
+    Z --> WS[WebSocket]
+    W --> WS
+    WS --> R[对端解码 / 校验 / 降级]
+        </div>
+      </div>
+      <pre><code>batch: [v, kind, sessionId, turnId, seq, segments, bytes]
+ack:   [v, kind, sessionId, turnId, seq]
+segments: [[0|1, text], ...]</code></pre>
+      <p>控制消息仍用 JSON；数据帧用 binary。MessagePack 与 deflate 可独立开启/降级。</p>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>索引与清理</h2>
+      <p class="figure-label">图 6：索引补齐与 30s 清理周期</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    I1[idx_peer_outbox_ack<br/>peer+session+turn+seq]
+    I2[idx_peer_outbox_pending<br/>partial status=pending]
+    I3[idx_peer_outbox_acked<br/>status+acked_at]
+    T1[Tick 1..59] --> N[正常 flush]
+    T2[Tick 60] --> C[DELETE acked < cutoff LIMIT 5000]
+    C --> K[WAL checkpoint]
+    I1 --> N
+    I2 --> N
+    I3 --> C
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>资源</th><th>策略</th></tr></thead>
+        <tbody>
+          <tr><td>peer_outbox ack</td><td>水位 + 精确索引</td></tr>
+          <tr><td>pending 重放</td><td>部分索引 WHERE status='pending'</td></tr>
+          <tr><td>acked 清理</td><td>每 30s，分批 5000，保留 1h</td></tr>
+          <tr><td>WAL</td><td>每 60 tick checkpoint</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>配置与语义</h2>
+      <pre><code>"transport": {
+  "chunkBatch": { "flushIntervalMs": 100, "maxBytes": 65536 },
+  "persistence": {
+    "workerTickMs": 500,
+    "flushEveryTicks": 1,
+    "criticalFlush": true,
+    "synchronous": "NORMAL",
+    "ackedCleanupEveryTicks": 60,
+    "ackedRetentionMs": 3600000,
+    "cleanupLimit": 5000,
+    "walCheckpointEveryTicks": 60
+  },
+  "compression": { "perMessageDeflate": true, "threshold": 1024, "level": 6 },
+  "msgpack": { "enabled": true }
+}</code></pre>
+      <div class="callout warn">崩溃语义：未 flush 的 chunk 最多丢一个 tick（turn 中断）；done/error 发送前已 flush；ack/inbound 水位回退可能造成重发/重复展示，但最终消息按 turn 幂等。</div>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>测试与验收</h2>
+      <table>
+        <thead><tr><th>类型</th><th>覆盖</th></tr></thead>
+        <tbody>
+          <tr><td>聚合</td><td>100ms/64KB、控制前 flush、text/reasoning 顺序</td></tr>
+          <tr><td>Ack</td><td>水位推进、缺口、重放、去重</td></tr>
+          <tr><td>Worker</td><td>500ms tick、critical flush、崩溃重启、shutdown flush</td></tr>
+          <tr><td>清理</td><td>每 60 tick、保留期、分批、索引命中</td></tr>
+          <tr><td>MessagePack</td><td>编解码、binary frame、降级、畸形帧</td></tr>
+          <tr><td>压缩</td><td>开关、阈值、压缩率、CPU</td></tr>
+          <tr><td>性能</td><td>消息/DB 写入下降 ≥10x；ack ≥10k/s；1KB 开销 ≤20%</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">验收：逐 token 流式不再每 chunk 写库/ack；done/error 不丢；Worker 周期与配置一致；MessagePack/deflate 可独立降级；旧 peer 兼容。</div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  X Transport Performance Design · v0.2 · 2026-11-28 ·
+  <a href="design-v0.3.html">X 完整设计 v0.3</a> ·
+  <a href="superagent-peer-routing.html">SuperAgent 路由</a> ·
+  <a href="peer-reliability.html">Peer 可靠性</a> ·
+  <a href="../index.html">站点首页</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
