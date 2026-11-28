@@ -94,6 +94,7 @@
     <a href="#routing">09. 路由决策</a>
     <a href="#superagent">10. SuperAgent</a>
     <a href="#transport">11. 批量与可靠投递</a>
+    <a href="#secure-frame">11.5 业务帧加密 <span class="pill">NEW</span></a>
     <a href="#persistence">12. 持久化 Worker</a>
     <a href="#agent-pool">13. Agent 池</a>
     <a href="#access">14. 接入与插件</a>
@@ -489,6 +490,45 @@ sequenceDiagram
         <div class="card"><h4>编码</h4><p>chunk.batch/chunk_ack 优先 MessagePack，其次 compact，最后 JSON。</p></div>
         <div class="card"><h4>可靠</h4><p>支持 ack 的 Peer 先落 outbox；接收端 seq 去重；done/error 关键事件主连接直写。</p></div>
         <div class="card"><h4>兼容</h4><p>老 Peer 不支持 ack 时走旧路径，不具备断线期间完整补推保证。</p></div>
+      </div>
+    </section>
+
+    <section id="secure-frame">
+      <h2><span class="num">11.5</span>业务帧加密（方案 3）</h2>
+      <p class="lead">握手交换独立链路密钥；ACTIVE 后所有业务帧使用 AES-256-GCM 加密，代理终止 TLS 后也看不到明文。</p>
+      <p class="figure-label">图 12.1：握手密钥交换与双向安全帧</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A 主动方
+    participant B as X-B 被连方
+    A->>B: auth(inner RSA: nonceB / keyA)
+    Note over B: RSA 解封 + 公钥指纹校验
+    B->>A: auth_ok(inner RSA: nonceA / nonceB / keyB)
+    Note over A: RSA 解封 + nonce/指纹校验
+    Note over A,B: txKey = HKDF(keyA|keyB, linkId, "a-to-b")<br/>rxKey = HKDF(keyB|keyA, linkId, "b-to-a")
+    A->>B: XE1 frame(epoch, seq, iv, AES-GCM(encoded frame))
+    B->>A: chunk_ack(seq) / XE1 frame
+    B->>A: XE1 frame(...)
+    Note over A,B: 解密后再进入 parseEnvelope / decodeFrame
+        </div>
+      </div>
+      <p class="figure-label">图 12.2：安全帧发送与接收</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    F["业务消息"] --> E["JSON envelope / MessagePack frame"]
+    E --> AES["AES-256-GCM<br/>txKey + random IV"]
+    AES --> XE["XE1 secure frame<br/>epoch / seq / iv / ciphertext + tag"]
+    XE --> WS["WebSocket / WSS"]
+    WS --> RX["XE1 校验 epoch / seq"]
+    RX --> DEC["rxKey 解密"]
+    DEC --> P["parseEnvelope / decodeFrame"]
+    P --> H["PeerLink 业务处理"]
+        </div>
+      </div>
+      <div class="callout warn">
+        <strong>边界</strong>：AES-GCM 保护业务帧机密性和完整性；静态 RSA 密钥交换不提供前向保密。旧 Peer 不支持 <code>secure-frame</code> 时，<code>preferred</code> 可降级明文，<code>required</code> 必须拒绝链路。WSS 仍建议保留。
       </div>
     </section>
 
