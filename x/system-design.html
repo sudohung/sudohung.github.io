@@ -91,6 +91,7 @@
     <a href="#session">06. 会话生命周期</a>
     <a href="#local-seq">07. 本地执行时序</a>
     <a href="#remote-seq">08. 跨节点时序</a>
+    <a href="#remote-lifecycle">08.5 会话生命周期优化 <span class="pill">NEW</span></a>
     <a href="#routing">09. 路由决策</a>
     <a href="#superagent">10. SuperAgent</a>
     <a href="#transport">11. 批量与可靠投递</a>
@@ -378,6 +379,35 @@ sequenceDiagram
         </div>
       </div>
       <div class="callout">会话状态归上行：A 决定路由、上下文与最终状态；B 只持有 remoteSessionId 和本次执行态。断线后 A 用 outbox/resume 补推。</div>
+    </section>
+
+    <section id="remote-lifecycle">
+      <h2><span class="num">08.5</span>远端会话生命周期优化 <span class="pill">NEW</span></h2>
+      <p class="lead">把会话绑定、turn 生命周期、Peer 可靠发送拆开：OpencodeClient 只观察，TurnRuntime 统一仲裁，PeerSink 只发送。</p>
+      <p class="figure-label">图 8.5：目标执行生命周期</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    OC["OpencodeClient<br/>SSE / snapshot 观察"] --> TR["TurnRuntime<br/>turn state / text / seq / terminal"]
+    REC["SnapshotReconciler<br/>仅兜底调度"] -->|"advisory snapshot"| TR
+    EB["ExecutionBinding<br/>ocSession / lease / timer"] -->|"turn scope"| TR
+    TR -->|"chunk / done / error<br/>turnId + seq"| PS["PeerSink<br/>可靠发送"]
+    PS --> OUT[("peer_outbox")]
+    PS --> PL["PeerLink<br/>ack / dedupe / replay"]
+    PL -->|"ack"| PS
+    TR --> ST[("Store<br/>turn / message / state")]
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>SSE 主事实源</h4><p>正常 SSE 活跃时 Snapshot 只读；只有 SSE 静默超过 grace period 才允许兜底。</p></div>
+        <div class="card"><h4>当前 turn 过滤</h4><p>Snapshot 的 error、completed、文本都必须带当前 turn 时间范围，历史 error 不污染当前轮。</p></div>
+        <div class="card"><h4>终态先发送</h4><p>先通过 PeerSink 发送 done/error 并进入 outbox，再释放 lease 和删除 execution。</p></div>
+        <div class="card"><h4>seq 不退化</h4><p>TurnRuntime 独立维护 seq；终态帧不得退化为 legacy/seq=0；seq=0 仅按 legacy 兼容。</p></div>
+      </div>
+      <div class="callout">
+        <strong>职责边界：</strong><code>OpencodeClient</code> 只观察；<code>TurnRuntime</code> 唯一写终态；<code>PeerSink</code> 不反查 execution；<code>SnapshotReconciler</code> 不直接结束 execution。
+      </div>
+      <p><a href="remote-session-architecture.html">查看完整《远端会话生命周期架构优化》图谱 →</a></p>
     </section>
 
     <section id="routing">
