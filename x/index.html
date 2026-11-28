@@ -92,6 +92,7 @@
       <li><a href="#s8">部署与目录</a></li>
       <li><a href="#s9">关键取舍</a></li>
       <li><a href="#s10">里程碑与验收</a></li>
+      <li><a href="#s11">Peer 设计 v0.2 <span class="pill">NEW</span></a></li>
     </ol>
   </nav>
 
@@ -325,6 +326,55 @@ flowchart LR
       </ol>
       <div class="callout">
         <strong>验收标准</strong>：两个 X 实例部署在不同网络，A 侧 Web 发一条任务，经决策选择 B 侧 agent 执行，B 侧流式回传，A 侧展示并可中途取消；断网 30s 内重连后结果不丢。
+      </div>
+    </section>
+
+
+    <section id="s11">
+      <h2><span class="num">11</span>Peer 连接层与可靠性 v0.2 <span class="pill">NEW</span></h2>
+      <p class="lead">在原有 peer 骨架上补齐：链路 epoch、会话持久化、outbox/ack/resume、重启恢复、peer 策略与防环。</p>
+      <h3>完整设计图：peer 生命周期、可靠性与治理</h3>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    subgraph XA["X-A 调用方"]
+        A0[Web / HTTP / 插件] --> A1[SessionManager]
+        A1 --> A2[Router + 能力注册表]
+        A2 --> A3[PeerOutbox<br/>seq / ack / 重放]
+        A3 --> A4[PeerLink<br/>epoch / 心跳]
+        A1 <--> A5[(peer_sessions<br/>peer_outbox<br/>peer_inbox)]
+        A6[PeerPolicy<br/>白名单 / 并发 / 限流 / TTL] --- A4
+    end
+    subgraph LINK["连接层：每对 peer 一条 WSS"]
+        L1["握手 + 特性协商<br/>linkId = hash(nonceA, nonceB)"] --> L2[ACTIVE]
+        L2 --> L3[心跳 / drain / bye / 重连]
+        L2 --> L4[旧 epoch 消息丢弃]
+    end
+    subgraph XB["X-B 执行方"]
+        B4[PeerLink] --> B1[SessionManager]
+        B1 --> B2[AgentPool / opencode]
+        B1 --> B3[PeerOutbox]
+        B3 --> B4
+        B1 <--> B5[(peer_sessions<br/>peer_outbox<br/>peer_inbox)]
+        B6[PeerPolicy] --- B4
+    end
+    A4 <-->|"session.open / prompt / chunk / done / error / ack / resume"| L2
+    L2 <-->|"同一全双工链路"| B4
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>链路隔离</h4><p>每次握手派生唯一 linkId（epoch）；重连即新 epoch，旧链路迟到消息丢弃。</p></div>
+        <div class="card"><h4>结果不丢</h4><p>chunk/done 先写 PeerOutbox；对端 ack 后清理；重连按 lastAckedSeq 补推。</p></div>
+        <div class="card"><h4>重启恢复</h4><p>持久化 sessionId ↔ remoteSessionId / caller 凭证 / taskId；启动后 resume 或按策略重开。</p></div>
+        <div class="card"><h4>可治理</h4><p>peer 级白名单、并发、速率、TTL、requireWss；能力声明按策略过滤。</p></div>
+        <div class="card"><h4>可观测</h4><p>链路状态、重连次数、outbox 积压、会话状态、chunk 延迟、错误码。</p></div>
+        <div class="card"><h4>防环</h4><p>session.open/prompt 携带 origin + depth；超深或同源回环直接拒绝。</p></div>
+      </div>
+      <div class="callout">
+        完整状态机、补推时序、进程重启恢复、peer 策略与测试计划见
+        <a href="peer-reliability.html">《Peer 连接层与会话可靠性设计 v0.2》</a>；
+        异构 peer 的落地方案见
+        <a href="agentbot-integration.html">《agentBot 接入 X》</a>。
       </div>
     </section>
 
