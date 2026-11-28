@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X · Peer 连接层与会话可靠性设计 v0.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f7fb; --panel:#fff; --ink:#1a1d27; --muted:#5b6172; --line:#e3e6ef;
+    --brand:#4c5bd4; --brand2:#7a5cf0; --accent:#00a37a; --warn:#c2410c;
+    --code-bg:#11141d; --code-ink:#d9e0f0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#1b2145 0%,#372a6e 45%,#4c5bd4 100%);color:#fff;padding:64px 24px 56px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:820px;color:#d8dcf5;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:14px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:620px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  .p0{background:#fff1f0;color:#c0392b}
+  .p1{background:#fff7e6;color:#b7791f}
+  .flow-badge{font-family:"JetBrains Mono",monospace;font-size:12px;background:#eef0f8;color:var(--brand);padding:1px 7px;border-radius:5px}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2}section{padding:22px 18px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Design Doc · v0.2 · 2026-11-28</div>
+    <h1>X Peer 连接层与会话可靠性</h1>
+    <p>让任意两个 X 节点（含异构 peer）在互联网上成为可靠对等实例：版本协商、链路 epoch、会话持久化、断线补推、绕过重启、peer 级治理与防环。</p>
+    <div class="tags">
+      <span class="tag">Protocol v2</span>
+      <span class="tag">Link Epoch</span>
+      <span class="tag">Outbox / Ack / Resume</span>
+      <span class="tag">Restart Recovery</span>
+      <span class="tag">Peer Policy</span>
+      <span class="tag">Loop Guard</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <a href="#s1">1. 目标与范围</a>
+    <a href="#s2">2. 当前问题</a>
+    <a href="#s3">3. 设计总览</a>
+    <a href="#s4">4. 协议 v2</a>
+    <a href="#s5">5. 连接层</a>
+    <a href="#s6">6. 会话可靠性</a>
+    <a href="#s7">7. 防环与背压</a>
+    <a href="#s8">8. 安全与 peer 策略</a>
+    <a href="#s9">9. 可观测与管理</a>
+    <a href="#s10">10. 兼容与迁移</a>
+    <a href="#s11">11. 测试计划</a>
+    <a href="#s12">12. 里程碑</a>
+  </nav>
+
+  <main>
+    <section id="s1">
+      <h2><span class="num">01</span>目标与范围</h2>
+      <p class="lead">只讨论 X 自身与连接层，不涉及对端 role / 业务语义。</p>
+      <div class="cards">
+        <div class="card"><h4>连得上</h4><p>握手鉴权、能力同步、断线自动重连、优雅下线。</p></div>
+        <div class="card"><h4>说得清</h4><p>协议版本与特性协商，异构 peer 可降级。</p></div>
+        <div class="card"><h4>不丢结果</h4><p>断网、进程重启后结果可补推，且不重复。</p></div>
+        <div class="card"><h4>不卡死</h4><p>每个会话有超时、取消与唯一终态。</p></div>
+        <div class="card"><h4>可治理</h4><p>peer 级权限、并发、限流、可观测。</p></div>
+        <div class="card"><h4>不成环</h4><p>跨节点调用携带 origin/depth。</p></div>
+      </div>
+      <div class="callout">非目标：多跳转发、role/业务路由、跨节点 fan-out、动态发现。</div>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>当前实现的问题</h2>
+      <p class="lead">骨架已能连通与透传，但缺少可靠性与治理。</p>
+      <table>
+        <thead><tr><th>类别</th><th>问题</th></tr></thead>
+        <tbody>
+          <tr><td>协议</td><td>只有 <code>v=1</code>；无特性协商、close/ack；<code>done/error</code> 缺终态细节</td></tr>
+          <tr><td>连接</td><td>重连只重建链路；打开中的会话不恢复；旧链路迟到消息无隔离</td></tr>
+          <tr><td>会话</td><td><code>remoteOutbound</code> 仅在内存且无 TTL；peer 掉线不会标记会话</td></tr>
+          <tr><td>持久化</td><td><code>pending_events</code> 已建表但未使用；无 seq 检查点、无重启恢复</td></tr>
+          <tr><td>安全</td><td>任何握手成功 peer 可声明任意能力；无 peer 级配额/限流</td></tr>
+          <tr><td>防环</td><td><code>maxHop</code> 配置未生效；1 跳只靠 <code>envelope.to</code> 校验</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>设计总览</h2>
+      <p class="lead">四个新模块：LinkEpoch、PeerSessionRegistry、PeerOutbox、PeerPolicy。</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph 连接层
+        H[握手 / 特性协商] --> L[PeerLink + linkId/epoch]
+        L --> HB[心跳 / 重连 / drain]
+        L --> POL[PeerPolicy 限流 / 白名单]
+    end
+    subgraph 会话层
+        SR[PeerSessionRegistry] --> OB[PeerOutbox]
+        OB --> L
+        L --> SR
+        SR --> SM[SessionManager]
+    end
+    subgraph 存储
+        DB[(SQLite: peer_sessions / peer_outbox / peer_inbox)]
+    end
+    SR --- DB
+    OB --- DB
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>协议 v2</h2>
+      <p class="lead">信封增加 epoch/origin/depth；hello 增加特性协商；补齐生命周期消息。</p>
+
+      <h3>4.1 信封扩展</h3>
+      <pre><code>{ "v": 2, "id": "uuid", "type": "chunk", "ts": 1730000000,
+  "from": "x-a", "to": "x-b", "traceId": "t-1", "corrId": "s-1",
+  "epoch": "link-7f3a", "origin": "x-a", "depth": 0,
+  "payload": {} }</code></pre>
+
+      <h3>4.2 版本与特性协商</h3>
+      <pre><code>{ "nodeId": "x-b",
+  "protocol": { "min": 1, "max": 2 },
+  "kind": "x",
+  "features": ["streaming","close","resume","ack","question","permission"] }</code></pre>
+      <ul>
+        <li>取最高共同版本，features 取交集。</li>
+        <li>降级：无 ack 不补推；无 resume 重连后标 interrupted；无 streaming 只收最终 done。</li>
+      </ul>
+
+      <h3>4.3 新增消息</h3>
+      <table>
+        <thead><tr><th>消息</th><th>方向</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td><code>session.close / closed</code></td><td>双向</td><td>关闭会话并释放远端执行态</td></tr>
+          <tr><td><code>prompt_ack</code></td><td>接收方→发送方</td><td>确认 prompt 已受理</td></tr>
+          <tr><td><code>cancel_ack</code></td><td>接收方→发送方</td><td>cancelled / already-done / unknown</td></tr>
+          <tr><td><code>chunk_ack</code></td><td>接收方→发送方</td><td>补推与背压依据</td></tr>
+          <tr><td><code>resume / resume.state</code></td><td>双向</td><td>重连后交换会话与 seq 状态</td></tr>
+          <tr><td><code>drain / bye</code></td><td>双向</td><td>优雅下线，避免立刻重连</td></tr>
+        </tbody>
+      </table>
+      <p>会话字段：<span class="flow-badge">openId</span> <span class="flow-badge">promptId</span> <span class="flow-badge">agentId?</span> <span class="flow-badge">done.reason</span> <span class="flow-badge">done.usage</span> <span class="flow-badge">error.code</span> <span class="flow-badge">error.retryable</span></p>
+
+      <h3>4.4 会话主流程</h3>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A 上行
+    participant B as X-B 远端
+    A->>B: session.open(openId, context, epoch)
+    B->>B: 幂等检查 + 资源检查
+    B-->>A: session.accept(remoteSessionId, epoch, features)
+    A->>B: prompt(promptId, text)
+    B-->>A: prompt_ack(promptId)
+    loop 流式
+        B-->>A: chunk(seq)
+        A-->>B: chunk_ack(seq)
+    end
+    B-->>A: done(seq, reason, usage)
+    A-->>B: chunk_ack(seq)
+        </div>
+      </div>
+      <div class="callout">幂等：接收端持久化 <code>(peerId, kind, key)</code>，重复请求返回首次结果；错误码含 <code>NO_AGENT / RATE_LIMITED / LOOP_DEPTH / BACKPRESSURE / SESSION_EXPIRED</code>。</div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>连接层</h2>
+      <p class="lead">每次握手派生唯一 linkId；重连即新 epoch，旧链路消息被隔离。</p>
+
+      <h3>5.1 linkId / epoch</h3>
+      <pre><code>linkId = hash(nonceA | nonceB)   // 双方一致，每次重连变化</code></pre>
+      <ul>
+        <li>所有会话消息带 <code>epoch</code>；registry 只接受当前 epoch。</li>
+        <li>旧链路迟到消息丢弃并计数 <code>stale_epoch_dropped</code>。</li>
+      </ul>
+
+      <h3>5.2 连接状态机</h3>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> CONNECTING
+    CONNECTING --> CHALLENGE_SENT: hello
+    CHALLENGE_SENT --> AUTH_PENDING: challenge
+    AUTH_PENDING --> ACTIVE: 双向校验 + 特性协商
+    ACTIVE --> DRAINING: 本端 drain
+    ACTIVE --> CONNECTING: 心跳超时 / 断线（新 epoch）
+    DRAINING --> CLOSED: bye / 超时
+    AUTH_PENDING --> CLOSED: 校验失败
+    CLOSED --> [*]
+        </div>
+      </div>
+
+      <h3>5.3 下线与重连</h3>
+      <ul>
+        <li>维护：先 <code>drain</code>，等在途 ack 或 5s，再 <code>bye</code> 关闭；对端不立即重连。</li>
+        <li>管理台「断开」= drain+bye，保留配置；「删除」= 移除配置。</li>
+        <li>重连退避 1s→30s + 抖动，增加全局重连预算与连续失败告警。</li>
+      </ul>
+
+      <h3>5.4 握手加固</h3>
+      <ul>
+        <li>按 IP 限频（10 次/分钟）、并发握手上限（50）、nonce 一次性 30s。</li>
+        <li><code>requireWss</code> 非 wss 直接拒绝；指纹不匹配审计。</li>
+      </ul>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>会话可靠性</h2>
+      <p class="lead">持久化会话 + outbox/ack + resume + 重启恢复，结果不丢不重。</p>
+
+      <h3>6.1 数据模型</h3>
+      <table>
+        <thead><tr><th>表</th><th>关键字段</th></tr></thead>
+        <tbody>
+          <tr><td><code>peer_sessions</code></td><td>session_id, peer_id, direction, remote_session_id, epoch, status, last_sent_seq, last_acked_seq, open_id, prompt_id, expires_at</td></tr>
+          <tr><td><code>peer_outbox</code></td><td>id, peer_id, session_id, seq, type, payload, status, attempts, next_retry_at</td></tr>
+          <tr><td><code>peer_inbox</code></td><td>peer_id, kind, key, result, created_at（幂等去重）</td></tr>
+          <tr><td><code>peer_audit</code></td><td>ts, peer_id, session_id, type, code, trace_id, meta</td></tr>
+        </tbody>
+      </table>
+
+      <h3>6.2 出站事件与补推</h3>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant S as SessionManager
+    participant O as PeerOutbox
+    participant L as PeerLink
+    participant P as 对端
+    S->>O: append(chunk / done, seq)
+    O->>L: send
+    L->>P: envelope(epoch)
+    P-->>L: chunk_ack(seq)
+    L->>O: mark_acked(seq)
+    Note over O: 断线期间保持 pending
+    L->>P: resume(lastAckedSeq)
+    P-->>L: resume.state(lastSeq)
+    O->>L: replay(seq > lastAckedSeq)
+        </div>
+      </div>
+
+      <h3>6.3 重连恢复</h3>
+      <ol>
+        <li>链路 ACTIVE（新 epoch），双方发送 <code>resume {sessions:[{sessionId,lastAckedSeq}]}</code>。</li>
+        <li>对端返回 status / lastSeq / remoteSessionId / resumable。</li>
+        <li>可恢复 → 补推；不可恢复 → interrupted，按策略重开或失败。</li>
+        <li>重开使用原 openId/promptId，避免重复执行。</li>
+      </ol>
+
+      <h3>6.4 进程重启恢复</h3>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[启动] --> B[加载 peer_sessions]
+    B --> C{状态 active/waiting?}
+    C -->|否| Z[忽略]
+    C -->|是| D{peer 已连接?}
+    D -->|否| E[标记 interrupted，保留 outbox]
+    D -->|是| F[resume 握手]
+    F --> G{对端可恢复?}
+    G -->|是| H[恢复 active，补推]
+    G -->|否| I{允许重开?}
+    I -->|是| J[用 openId 重开 + 重放 prompt]
+    I -->|否| K[标记 error / expired]
+        </div>
+      </div>
+
+      <h3>6.5 会话状态机</h3>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> OPENING
+    OPENING --> ACTIVE: accept
+    OPENING --> ERROR: reject / timeout
+    ACTIVE --> WAITING: question / permission
+    WAITING --> ACTIVE: answer / approve
+    ACTIVE --> CANCELLING: cancel
+    CANCELLING --> CANCELLED: cancel_ack
+    ACTIVE --> DONE: done
+    ACTIVE --> INTERRUPTED: link down
+    INTERRUPTED --> ACTIVE: resume ok
+    INTERRUPTED --> ERROR: resume failed
+    WAITING --> INTERRUPTED: link down
+    DONE --> [*]
+    CANCELLED --> [*]
+    ERROR --> [*]
+        </div>
+      </div>
+
+      <h3>6.6 超时、租约与幂等</h3>
+      <ul>
+        <li>open 20s；执行超时按 peer 策略（默认 10min）；idle TTL 10min。</li>
+        <li>链路关闭立即 abort 入站执行、释放 lease、标记 interrupted。</li>
+        <li>inbound 唯一键 <code>(peer_id, remote_session_id, epoch)</code>；新 epoch 视为新会话。</li>
+        <li>按时清理 expired 会话与 outbox/inbox 过期记录。</li>
+      </ul>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>防环与背压</h2>
+
+      <h3>7.1 防环</h3>
+      <ul>
+        <li><code>origin</code>（根节点）+ <code>depth</code>（初始 0）；<code>depth &gt;= 3</code> 或 <code>origin==local &amp;&amp; depth&gt;0</code> 拒绝。</li>
+        <li>远端执行保存 origin/depth；再次发起 peer 调用时递减预算。</li>
+        <li>HTTP 工具可选带 <code>X-Origin / X-Depth</code>，创建 peer 会话时继承。</li>
+      </ul>
+
+      <h3>7.2 背压</h3>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A[产生 chunk] --> B{会话队列超过高水位?}
+    B -->|否| C[合并发送 32KB / 50ms]
+    B -->|是| D[暂停读取 / 排队]
+    D --> E{超过硬上限?}
+    E -->|否| C
+    E -->|是| F[关闭会话 BACKPRESSURE]
+        </div>
+      </div>
+      <p>单帧 1MB；会话 outbox 软上限 8MB、硬上限 32MB；慢消费者连续未 ack 则降级或断开。</p>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>安全与 peer 策略</h2>
+      <pre><code>{
+  "id": "x-b", "url": "wss://b/peer", "publicKey": "...", "direction": "both",
+  "policy": {
+    "canServe": true, "canCall": true,
+    "allowedTags": ["java"], "allowedAgentIds": ["oc-1"],
+    "maxSessions": 8, "maxConcurrency": 4,
+    "sessionTtlMs": 600000,
+    "rateLimit": { "messagesPerSec": 50, "sessionOpensPerMin": 10 },
+    "requireWss": true, "ipAllowlist": []
+  }
+}</code></pre>
+      <ul>
+        <li><code>capability.update</code> 按白名单过滤；越权条目丢弃并审计。</li>
+        <li>入站超限返回 <code>session.reject(RATE_LIMITED)</code>。</li>
+        <li>密钥轮换：双公钥过渡期 + 旧指纹吊销；管理台操作。</li>
+      </ul>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>可观测与管理</h2>
+      <div class="cards">
+        <div class="card"><h4>链路</h4><p>state、reconnect 次数、RTT、握手失败、stale epoch 丢弃。</p></div>
+        <div class="card"><h4>会话</h4><p>按状态计数、outbox 积压、chunk 延迟、错误码分布。</p></div>
+        <div class="card"><h4>流量</h4><p>收发字节、限流丢弃、背压触发。</p></div>
+        <div class="card"><h4>管理</h4><p>peer 详情、活跃会话、测试连接、drain、拉取能力、密钥轮换。</p></div>
+      </div>
+      <p>新增审计表 <code>peer_audit</code>，按 traceId 可查全链路事件。</p>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span>兼容与迁移</h2>
+      <ul>
+        <li>v1 peer：无 epoch/ack/resume/close，走降级路径，UI 标注 degraded。</li>
+        <li>v2 peer：全能力；按 features 交集执行。</li>
+        <li>迁移：新增 peer_* 表；旧 <code>pending_events</code> 迁移或清空。</li>
+        <li>灰度：默认关闭 v2，按 peer 开启；稳定后默认 v2。</li>
+      </ul>
+    </section>
+
+    <section id="s11">
+      <h2><span class="num">11</span>测试计划</h2>
+      <table>
+        <thead><tr><th>类型</th><th>用例</th></tr></thead>
+        <tbody>
+          <tr><td>单元</td><td>协商、状态机、幂等、策略、防环、outbox 重放</td></tr>
+          <tr><td>集成</td><td>X↔X、X↔假异构 peer：open/prompt/chunk/done/cancel/close</td></tr>
+          <tr><td>断线</td><td>各阶段断网、补推、旧 epoch 消息、peer 重启</td></tr>
+          <tr><td>重启</td><td>X 重启恢复、outbox 重放、重复 prompt</td></tr>
+          <tr><td>异常</td><td>chunk 丢/重/乱序、cancel 与 done 竞态、超大消息、慢消费者</td></tr>
+          <tr><td>安全</td><td>握手洪泛、能力越权、限流、requireWss、密钥轮换</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s12">
+      <h2><span class="num">12</span>里程碑与验收</h2>
+      <table>
+        <thead><tr><th>阶段</th><th>内容</th><th>验收</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill p0">M1</span></td><td>协议 v2、epoch、close/ack、peer 掉线、租约释放</td><td>断线不卡死，取消有确认</td></tr>
+          <tr><td><span class="pill p0">M2</span></td><td>持久化、outbox、resume、重启恢复、prompt 幂等</td><td>断网/重启结果不丢不重</td></tr>
+          <tr><td><span class="pill p1">M3</span></td><td>peer 策略、限流、背压、防环</td><td>越权/超限/回环被阻断</td></tr>
+          <tr><td><span class="pill p1">M4</span></td><td>管理台、指标、审计、测试补齐</td><td>可观测、可运维</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">最终验收：两节点跨公网运行，任意阶段断网/重启后任务最终一致（不丢、不重、不卡死），旧链路消息被隔离，peer 级策略生效。</div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  X Peer Reliability Design · v0.2 · 2026-11-28 ·
+  <a href="index.html">X 主设计</a> ·
+  <a href="../index.html">站点首页</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
