@@ -388,8 +388,19 @@ flowchart LR
       <p><a class="pill" href="system-design.html">打开完整系统设计图谱 →</a></p>
     </section>
 
-  </main>
-</div>
+    <section id="s13">
+        <h2><span class="num">13</span>远端会话生命周期架构优化 <span class="pill">NEW</span></h2>
+        <p class="lead">针对远端会话中断后丢失回复、快照误判终态、终态帧序号退化等问题，按职责边界重构为 TurnRuntime + SnapshotReconciler + PeerSink。</p>
+        <div class="cards">
+          <div class="card"><h4>职责收敛</h4><p>OpencodeClient 只观察；TurnRuntime 统一终态仲裁；PeerSink 只负责可靠发送。</p></div>
+          <div class="card"><h4>关键修复</h4><p>当前 turn 过滤、SSE 优先、终态先发送后释放、seq=0 兼容、迟到结果恢复。</p></div>
+          <div class="card"><h4>设计图谱</h4><p>现状/目标架构、领域模型、SSE 与 Snapshot 仲裁、终态时序、状态机与迁移路线。</p></div>
+        </div>
+        <p><a class="pill" href="remote-session-architecture.html">打开远端会话架构优化图谱 →</a></p>
+      </section>
+
+    </main>
+  </div>
 
 <footer>
   X Design Doc · v0.1 · 2026-11-28 ·
@@ -398,6 +409,7 @@ flowchart LR
   <a href="superagent-peer-routing.html">SuperAgent 路由设计</a> ·
   <a href="transport-performance.html">传输性能优化 v0.2</a> ·
   <a href="system-design.html">完整系统设计 v1.0</a> ·
+  <a href="remote-session-architecture.html">远端会话生命周期架构优化</a> ·
   <a href="../index.html">返回站点首页</a>
 </footer>
 

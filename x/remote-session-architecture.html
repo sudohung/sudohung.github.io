@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X · 远端会话执行生命周期架构优化</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6fb; --panel:#fff; --ink:#1a1d27; --muted:#5b6172;
+    --line:#e2e5ef; --brand:#4c5bd4; --brand2:#7a5cf0; --accent:#00a37a;
+    --warn:#c2410c; --danger:#b42318; --code-bg:#11141d; --code-ink:#d9e0f0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#1d254d 0%,#332d74 48%,#4c5bd4 100%);color:#fff;padding:60px 24px 52px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,43px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:900px;color:#d9def7;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:270px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:20px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;max-height:calc(100vh - 40px);overflow:auto}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13.5px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 16px;font-size:14.5px}
+  h3{font-size:16px;margin:24px 0 10px}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:16px 18px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:700px}
+  .figure-label{font-size:12px;color:var(--muted);margin:6px 0 -8px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .callout.danger{border-left-color:var(--danger);background:#fff1f0}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  .flow-badge{font-family:"JetBrains Mono",monospace;font-size:12px;background:#eef0f8;color:var(--brand);padding:1px 7px;border-radius:5px;display:inline-block;margin:2px}
+  .before{color:var(--danger);font-weight:600}
+  .after{color:var(--accent);font-weight:600}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2;max-height:none}section{padding:22px 18px}.diagram .mermaid{min-width:560px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Architecture Review · 2026-11-29</div>
+    <h1>远端会话执行生命周期架构优化</h1>
+    <p>从「SSE、Snapshot、Execution、PeerSink 四处判断终态」收敛为「OpencodeClient 只观察、TurnRuntime 统一仲裁、PeerSink 可靠发送」。</p>
+    <div class="tags">
+      <span class="tag">TurnRuntime</span>
+      <span class="tag">SSE 主事实源</span>
+      <span class="tag">Snapshot 兜底</span>
+      <span class="tag">终态只写一次</span>
+      <span class="tag">seq / ack</span>
+      <span class="tag">迟到结果恢复</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>图谱目录</h2>
+    <a href="#problem">01. 问题与缺陷链</a>
+    <a href="#boundary">02. 职责边界重构</a>
+    <a href="#target">03. 目标架构</a>
+    <a href="#model">04. 领域模型</a>
+    <a href="#arbitration">05. SSE / Snapshot 仲裁</a>
+    <a href="#terminal">06. 终态发送顺序</a>
+    <a href="#state">07. Turn 状态机</a>
+    <a href="#rules">08. Snapshot 判定规则</a>
+    <a href="#seq">09. seq / ack / 迟到结果</a>
+    <a href="#roadmap">10. 实施顺序</a>
+  </nav>
+
+  <main>
+    <section id="problem">
+      <h2><span class="num">01</span>问题与缺陷链</h2>
+      <p class="lead">现象是「中断后收不到回复、刷新后对话丢失」，本质是终态判断权不唯一，且恢复信号无法覆盖已删除的执行上下文。</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A["用户中断"] --> B["opencode 留下历史 error"]
+    B --> C["Snapshot 未按当前 turn 过滤"]
+    C --> D["15s reconcile 误判 error"]
+    D --> E["删除 execution"]
+    E --> F["终态帧 turnId=legacy / seq=0"]
+    F --> G["接收端 seq 去重丢弃"]
+    E --> H["后续 SSE 真实结果无 execution 可投递"]
+    G --> I["x-b 永久 running"]
+    H --> I
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>D1 步骤完成误判</h4><p>assistant tool-step 的 <code>time.completed</code> 被当成整轮完成。</p></div>
+        <div class="card"><h4>D2 历史 error 污染</h4><p>Snapshot 中任意旧 error 都会让当前轮永久失败。</p></div>
+        <div class="card"><h4>D3 双写终态</h4><p>SSE 与 reconcile 谁先到谁写终态，没有版本或仲裁。</p></div>
+        <div class="card"><h4>D4 终态序号退化</h4><p>execution 删除后，PeerSink 无法再取得 turnId/seq。</p></div>
+        <div class="card"><h4>D5 seq=0 被吞</h4><p>终态帧 <code>seq=0</code> 被当成重复帧静默丢弃。</p></div>
+        <div class="card"><h4>D6 迟到结果丢弃</h4><p>execution 不存在时直接 return，最终真实结果无法补发。</p></div>
+      </div>
+      <div class="callout danger">
+        <strong>核心结论：</strong>不能只修某一个分支。必须同时修正「完成判定、终态仲裁、终态序号、迟到恢复」四个职责。
+      </div>
+    </section>
+
+    <section id="boundary">
+      <h2><span class="num">02</span>职责边界重构</h2>
+      <p class="lead">当前多个组件都能解释「完成/失败」；目标是把观察、决策、发送、资源持有拆开。</p>
+      <table>
+        <thead><tr><th>组件</th><th>目标职责</th><th>明确不负责</th></tr></thead>
+        <tbody>
+          <tr><td><code>OpencodeClient</code></td><td>HTTP/SSE 协议、事件归一化、读取 snapshot</td><td>判断 turn 完成、写终态、生成 Peer seq</td></tr>
+          <tr><td><code>SnapshotReconciler</code></td><td>调度快照检查、判断是否允许兜底</td><td>直接结束 execution</td></tr>
+          <tr><td><code>TurnRuntime</code></td><td>单轮状态机、文本累积、终态仲裁、seq</td><td>HTTP、Peer 传输</td></tr>
+          <tr><td><code>ExecutionBinding</code></td><td>opencode session、Agent lease、idle timer</td><td>业务终态判断</td></tr>
+          <tr><td><code>PeerSink</code></td><td>使用 TurnRuntime 的 turnId/seq 发送并写 outbox</td><td>从 execution Map 反查 turn 信息</td></tr>
+          <tr><td><code>Store</code></td><td>持久化 session/turn/message/outbox</td><td>决定是否完成</td></tr>
+          <tr><td><code>PeerLink</code></td><td>ack、去重、断线重传</td><td>业务完成判定</td></tr>
+        </tbody>
+      </table>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph NOW["现状：职责重叠"]
+        OC1["OpencodeClient<br/>SSE + Snapshot + 终态判断"]
+        SM1["SessionManager<br/>SSE + reconcile + finishExecution"]
+        PS1["PeerSink<br/>反查 execution 生成 seq"]
+        DB1[("SQLite")]
+        OC1 -->|"running / idle / error"| SM1
+        SM1 -->|"直接写终态"| PS1
+        SM1 --> DB1
+        SM1 <-->|"reconcile 双写"| OC1
+        PS1 -.->|"execution 已删除<br/>turnId=legacy seq=0"| DB1
+    end
+        </div>
+      </div>
+    </section>
+
+    <section id="target">
+      <h2><span class="num">03</span>目标架构</h2>
+      <p class="lead">TurnRuntime 成为唯一终态仲裁者；OpencodeClient 提供观察结果；Snapshot 只作为兜底建议。</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    OC["OpencodeClient<br/>SSE parser / snapshot reader"]
+    REC["SnapshotReconciler<br/>仅调度与兜底"]
+    TR["TurnRuntime<br/>turn state / text / seq / terminal"]
+    PS["PeerSink<br/>serialize / outbox / reliable send"]
+    EB["ExecutionBinding<br/>ocSession / lease / idle timer"]
+    ST[("Store<br/>session / turn / message / outbox")]
+    PEER["PeerLink<br/>ack / dedupe / replay"]
+
+    OC -->|"normalized SSE observation"| TR
+    OC -->|"snapshot observation"| REC
+    REC -->|"advisory snapshot"| TR
+    EB -->|"client + lease + turn scope"| TR
+    TR -->|"chunk / done / error (turnId, seq)"| PS
+    TR -->|"turn state + text"| ST
+    PS -->|"outbox"| ST
+    PS --> PEER
+    PEER -->|"ack"| PS
+        </div>
+      </div>
+      <div class="callout">
+        <strong>单向数据流：</strong>OpencodeClient 永远不写 turn 终态；SnapshotReconciler 永远不删除 execution；PeerSink 永远不自行推断 turnId/seq。
+      </div>
+    </section>
+
+    <section id="model">
+      <h2><span class="num">04</span>领域模型</h2>
+      <p class="lead">把长期存在的 opencode session/lease 与短周期的 turn 拆开，避免删除 execution 时丢失终态上下文。</p>
+      <div class="diagram">
+        <div class="mermaid">
+classDiagram
+    class Session {
+      +string id
+      +string channel
+      +string ownerNode
+      +string remoteSessionId
+      +string status
+    }
+    class ExecutionBinding {
+      +string executionId
+      +string ocSessionId
+      +string peerId
+      +string xSessionId
+      +AgentClient client
+      +Lease lease
+      +string profileId
+    }
+    class TurnRuntime {
+      +string turnId
+      +string executionId
+      +number startedAt
+      +number lastSseAt
+      +string state
+      +number terminalAt
+      +string terminalSource
+      +number seq
+      +string finalText
+      +applyEvent()
+      +applySnapshot()
+      +finish()
+    }
+    class PeerSink {
+      +string turnId
+      +number seq
+      +sendChunk()
+      +sendDone()
+      +sendError()
+    }
+    Session "1" --> "*" TurnRuntime
+    ExecutionBinding "1" --> "*" TurnRuntime
+    TurnRuntime "1" --> "1" PeerSink
+        </div>
+      </div>
+      <pre><code>TurnRuntime {
+  turnId, executionId,
+  startedAt, lastSseAt,
+  state: running | done | error | interrupted | cancelled,
+  terminalAt, terminalSource: sse | snapshot | user,
+  seq, partTexts, finalText
+}</code></pre>
+    </section>
+
+    <section id="arbitration">
+      <h2><span class="num">05</span>SSE / Snapshot 仲裁</h2>
+      <p class="lead">SSE 正常时 Snapshot 只读；只有 SSE 静默超过 grace period 才允许兜底。终态只能写一次。</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant OC as Opencode
+    participant OBS as OpencodeClient
+    participant TR as TurnRuntime
+    participant REC as SnapshotReconciler
+    participant PS as PeerSink
+
+    OC-->>OBS: SSE chunk / tool / idle
+    OBS->>TR: normalized event
+    TR->>TR: lastSseAt = now
+    TR->>PS: chunk(turnId, seq)
+
+    alt SSE 仍活跃
+        REC->>OBS: tick（仅检查，不判终态）
+        OBS-->>REC: snapshot
+        REC->>TR: applySnapshot()
+        TR-->>REC: ignore（lastSseAt 在 grace 内）
+    else SSE 静默超时
+        REC->>OBS: read current-turn snapshot
+        OBS-->>REC: observation
+        REC->>TR: applySnapshot()
+        alt 当前 turn 明确 idle
+            TR->>PS: done(turnId, seq, text)
+        else 当前 turn 明确 error
+            TR->>PS: error(turnId, seq, reason)
+        else 历史 error / tool-step
+            TR-->>REC: keep running
+        end
+    end
+        </div>
+      </div>
+      <div class="callout warn">
+        <strong>关键约束：</strong>Snapshot 只能返回「观察结果」，不能直接返回业务终态；是否结束由 TurnRuntime 根据 SSE 活跃度、当前 turn 范围和 terminal 状态决定。
+      </div>
+    </section>
+
+    <section id="terminal">
+      <h2><span class="num">06</span>终态发送顺序</h2>
+      <p class="lead">终态必须先进入可靠发送链路，再释放 lease 和删除运行时上下文。</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant TR as TurnRuntime
+    participant PS as PeerSink
+    participant ST as Store
+    participant PL as PeerLink
+    participant EB as ExecutionBinding
+
+    TR->>TR: state = done
+    TR->>PS: done(turnId, seq, text)
+    PS->>ST: append(peer_outbox, turnId, seq)
+    PS->>PL: send(done)
+    PL-->>PS: ack(turnId, seq)
+    PS->>ST: mark acked
+    TR->>TR: terminalAt = now
+    TR->>ST: update turn = done
+    TR->>EB: release lease
+    TR->>TR: delete runtime binding
+        </div>
+      </div>
+      <div class="callout">
+        <strong>禁止：</strong>先删除 execution/释放 lease，再通过 execution Map 反查 turnId/seq。终态上下文应由 TurnRuntime 和 PeerSink 持有。
+      </div>
+    </section>
+
+    <section id="state">
+      <h2><span class="num">07</span>Turn 状态机</h2>
+      <p class="lead">Turn 状态只由 TurnRuntime 修改；每种终态写一次，后续信号只记录，不重复发送。</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> Running
+    Running --> Running: SSE part / tool
+    Running --> Running: snapshot=running
+    Running --> Done: SSE idle / current-turn idle
+    Running --> Error: current-turn error
+    Running --> Interrupted: execution interrupted
+    Running --> Cancelled: user cancel
+    Done --> [*]
+    Error --> [*]
+    Interrupted --> [*]
+    Cancelled --> [*]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>信号</th><th>Turn 状态</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td><code>session.idle</code></td><td>Done</td><td>唯一整轮完成信号</td></tr>
+          <tr><td><code>session.execution.succeeded</code></td><td>Done</td><td>成功终态</td></tr>
+          <tr><td><code>session.execution.failed</code></td><td>Error</td><td>失败终态</td></tr>
+          <tr><td><code>session.execution.interrupted</code></td><td>Interrupted</td><td>不能映射为 Done</td></tr>
+          <tr><td>assistant <code>time.completed</code></td><td>Running</td><td>步骤完成，不等于整轮完成</td></tr>
+          <tr><td>历史 error</td><td>Running</td><td>只记录，不污染当前 turn</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="rules">
+      <h2><span class="num">08</span>Snapshot 判定规则</h2>
+      <p class="lead">Snapshot 必须带当前 turn 范围，不能在整个会话历史中 find error。</p>
+      <div class="grid-table">
+        <table>
+          <thead><tr><th>规则</th><th>要求</th></tr></thead>
+          <tbody>
+            <tr><td>时间范围</td><td>只接受 <code>createdAt >= turn.startedAt - skew</code> 的消息</td></tr>
+            <tr><td>error</td><td>只认当前 turn 的 error；历史 error 返回 <code>historical-error</code></td></tr>
+            <tr><td>completion</td><td>只有 <code>session.idle</code> / <code>execution.succeeded</code> 能判整轮完成</td></tr>
+            <tr><td>tool-step</td><td><code>assistant.time.completed</code> 仅表示步骤结束</td></tr>
+            <tr><td>text</td><td>只拼接当前 turn 的 assistant 消息，禁止使用全部历史 completed</td></tr>
+            <tr><td>interrupted</td><td>独立状态，不进入 idle/done 分支</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <pre><code>SnapshotObservation {
+  state: 'running' | 'idle' | 'failed' | 'missing' | 'unknown',
+  turnStartedAt,
+  messageIds,
+  text?,
+  failure?: { messageId, createdAt, message },
+  reason: 'idle' | 'current-turn-error' | 'historical-error' | 'tool-step' | 'unknown'
+}</code></pre>
+      <div class="callout warn">
+        v1/v2 必须使用同一套归一化规则。当前 v1 的 <code>messages.find(error)</code> 同样需要加当前 turn 过滤。
+      </div>
+    </section>
+
+    <section id="seq">
+      <h2><span class="num">09</span>seq / ack / 迟到结果</h2>
+      <div class="cards">
+        <div class="card"><h4>终态 seq</h4><p>TurnRuntime 独立维护 seq，终态也必须使用真实递增 seq；不能退化为 <code>0</code>。</p></div>
+        <div class="card"><h4>seq=0 兼容</h4><p>旧格式 <code>seq=0</code> 视为无序号广播，用 eventId 去重，不能被 <code>seq &lt;= last</code> 静默丢弃。</p></div>
+        <div class="card"><h4>迟到结果</h4><p>TurnRuntime 保留到终态 ack 或保留期结束；execution 删除后仍可补发终态。</p></div>
+        <div class="card"><h4>ack 一致</h4><p>outbox 使用什么 key，ack 必须回写同一个 <code>turnId + seq</code>，不能混用 promptId/openId。</p></div>
+      </div>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    A["终态事件"] --> B["TurnRuntime seq + 1"]
+    B --> C["PeerSink send(turnId, seq)"]
+    C --> D["peer_outbox"]
+    D --> E["PeerLink send"]
+    E --> F["Peer ack(turnId, seq)"]
+    F --> G["mark acked"]
+    C -->|"ack 超时"| H["保留 terminal / runtime"]
+    H --> I["重连重放"]
+        </div>
+      </div>
+    </section>
+
+    <section id="roadmap">
+      <h2><span class="num">10</span>实施顺序</h2>
+      <p class="lead">先消除错误与丢失，再引入仲裁和恢复，最后统一可观测性。</p>
+      <div class="cards">
+        <div class="card"><h4>P0 正确性</h4><p>Snapshot 当前 turn 过滤；只认 idle；终态先发送后清理；seq=0 不丢。</p></div>
+        <div class="card"><h4>P1 仲裁</h4><p>TurnRuntime；SSE 主事实源；lastSseAt/terminalAt；interrupted 独立映射；文本按 turn 过滤。</p></div>
+        <div class="card"><h4>P2 恢复</h4><p>迟到结果补发；inbound turn 落库；profileId 保留；ack key 统一；capability upsert。</p></div>
+      </div>
+      <h3>验收用例</h3>
+      <ul>
+        <li>历史 error + 当前 running：Snapshot 必须返回 running</li>
+        <li>tool step completed 但无 idle：不能产生空 done</li>
+        <li>SSE idle 与 Snapshot error 竞争：SSE 优先</li>
+        <li>终态释放 execution 后：turnId/seq 仍正确</li>
+        <li>seq=0 legacy 终态：不能被静默丢弃</li>
+        <li>execution 已删除后迟到 SSE：可以补发终态或记录 late result</li>
+        <li>interrupted：不能映射为 done</li>
+        <li>多轮文本：不能包含上一轮历史正文</li>
+      </ul>
+      <div class="callout">
+        <strong>一句话：</strong>把「会话绑定」「turn 生命周期」「Peer 可靠发送」拆成三个明确边界，终态只由 TurnRuntime 写一次。
+      </div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  X Architecture Review · 2026-11-29 ·
+  <a href="index.html">返回 X 设计索引</a> ·
+  <a href="system-design.html">完整系统设计</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220', primaryColor: '#242a45', primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4', lineColor: '#7d86c9', secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f', fontSize: '14px', clusterBkg: '#141830',
+      clusterBorder: '#39406b', edgeLabelBackground: '#0f1220', actorBkg: '#242a45',
+      actorBorder: '#4c5bd4', actorTextColor: '#e8ecff', signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5', noteBkgColor: '#2a2140', noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0', labelBoxBkgColor: '#1a1f38', labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
