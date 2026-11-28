@@ -1,0 +1,248 @@
+{
+  "date": "2026-11-28",
+  "time": "1000",
+  "label": "资讯快报",
+  "total": 41,
+  "sources": [
+    "爱范儿",
+    "少数派",
+    "IT之家",
+    "量子位",
+    "Hacker News",
+    "The Verge",
+    "TechCrunch"
+  ],
+  "highlights": [
+    {
+      "title": "24.99 万元起！宝马新世代 i3 正式上市，纯电续航高达 1028km丨广州车展",
+      "link": "https://www.ifanr.com/1695987?utm_source=rss&utm_medium=rss&utm_campaign",
+      "source": "爱范儿"
+    },
+    {
+      "title": "本月玩什么｜GTA VI、塞尔达传说 时之笛、魔兽世界：无限",
+      "link": "https://sspai.com/post/119686",
+      "source": "少数派"
+    },
+    {
+      "title": "告别旧界面：火狐 Firefox 浏览器下月将移除回退选项，Nova 界面成唯一选择",
+      "link": "https://www.ithome.com/1/033/806.htm",
+      "source": "IT之家"
+    },
+    {
+      "title": "人形机器人开发者集合！众擎开放大小脑，10亿产业级生态支持计划也来了",
+      "link": "https://www.qbitai.com/2026/11/513352.html",
+      "source": "量子位"
+    },
+    {
+      "title": "Google's DeepCrossAttention achieves comparable model quality up to 3x faster",
+      "link": "https://research.google/blog/supercharging-transformer-residual-connections/",
+      "source": "Hacker News"
+    },
+    {
+      "title": "We found 60-odd Black Friday deals we love for $100 or less",
+      "link": "https://www.theverge.com/gadgets/1043445/black-friday-best-cheap-tech-deals-under-100-2026",
+      "source": "The Verge"
+    }
+  ],
+  "sections": [
+    {
+      "name": "爱范儿",
+      "items": [
+        {
+          "title": "24.99 万元起！宝马新世代 i3 正式上市，纯电续航高达 1028km丨广州车展",
+          "link": "https://www.ifanr.com/1695987?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "9.69 万元，奇瑞 QQ3 变身一辆可以开咖啡馆的「QQ 啡车」丨广州车展",
+          "link": "https://www.ifanr.com/1695964?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "从「中国特供」变全球旗舰，搭载 Momenta 智驾的本田冠道来了｜广州车展",
+          "link": "https://www.ifanr.com/1695948?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "启源 Q06 迎来大升级！长安发布天枢领航 Ultra 2.0，明年 1 月推车位到车位｜广州车展",
+          "link": "https://www.ifanr.com/1695936?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "捷途纵横 R700 发布：华为乾崑智驾配大梁，家用硬派两手抓｜广州车展",
+          "link": "https://www.ifanr.com/1695926?utm_source=rss&utm_medium=rss&utm_campaign"
+        },
+        {
+          "title": "43.99 万元，只有一个配置，岚图泰山纯电版带来了三腔空悬｜广州车展",
+          "link": "https://www.ifanr.com/1695915?utm_source=rss&utm_medium=rss&utm_campaign"
+        }
+      ]
+    },
+    {
+      "name": "少数派",
+      "items": [
+        {
+          "title": "本月玩什么｜GTA VI、塞尔达传说 时之笛、魔兽世界：无限",
+          "link": "https://sspai.com/post/119686"
+        },
+        {
+          "title": "本周看什么 | 最近值得一看的 8 部作品",
+          "link": "https://sspai.com/post/119658"
+        },
+        {
+          "title": "「黑五」值得买：不容错过的 App 和服务优惠",
+          "link": "https://sspai.com/post/119601"
+        },
+        {
+          "title": "派早报：1Password 确认内部系统遭入侵等",
+          "link": "https://sspai.com/post/119632"
+        },
+        {
+          "title": "App+1｜Agora：开源、易用、好用，给 Android 用户的 LLM 聊天工具",
+          "link": "https://sspai.com/post/116773"
+        },
+        {
+          "title": "论文作图不求人，用 ChatGPT 和 Keynote 免费搞定机理图",
+          "link": "https://sspai.com/post/119563"
+        }
+      ]
+    },
+    {
+      "name": "IT之家",
+      "items": [
+        {
+          "title": "告别旧界面：火狐 Firefox 浏览器下月将移除回退选项，Nova 界面成唯一选择",
+          "link": "https://www.ithome.com/1/033/806.htm"
+        },
+        {
+          "title": "仅今年第三季度，SK 海力士员工人均绩效奖金预估可达 2.3 亿韩元",
+          "link": "https://www.ithome.com/1/033/805.htm"
+        },
+        {
+          "title": "Wine 11.23 新增 ARM64 macOS 支持：VKD3D 升级至 2.2，修复《明日方舟：终末地》等游戏兼容性问题",
+          "link": "https://www.ithome.com/1/033/804.htm"
+        },
+        {
+          "title": "开发者推出《寂静岭 PC 版》引擎，安卓手机也能玩初代经典",
+          "link": "https://www.ithome.com/1/033/803.htm"
+        },
+        {
+          "title": "R 星联合负责人尼尔森表态：《侠盗猎车手》系列不太可能走出美国",
+          "link": "https://www.ithome.com/1/033/801.htm"
+        },
+        {
+          "title": "民间移植 PC 版 LineageOS 24 登场：4GB 内存电脑也能运行，让你体验安卓 17",
+          "link": "https://www.ithome.com/1/033/800.htm"
+        }
+      ]
+    },
+    {
+      "name": "量子位",
+      "items": [
+        {
+          "title": "人形机器人开发者集合！众擎开放大小脑，10亿产业级生态支持计划也来了",
+          "link": "https://www.qbitai.com/2026/11/513352.html"
+        },
+        {
+          "title": "全国首批首家！商汤大装置获Token工厂智算能力最高评级",
+          "link": "https://www.qbitai.com/2026/11/513346.html"
+        },
+        {
+          "title": "韦东奕再获大奖！攻克近140年数学难题，获两位院士共同提名",
+          "link": "https://www.qbitai.com/2026/11/513320.html"
+        },
+        {
+          "title": "DeepSeek APP突然更新账单，网友：要收费了？",
+          "link": "https://www.qbitai.com/2026/11/513305.html"
+        },
+        {
+          "title": "刚刚，首个带跨任务空间记忆的原生基模开源！机器人端侧就能跑",
+          "link": "https://www.qbitai.com/2026/11/513227.html"
+        }
+      ]
+    },
+    {
+      "name": "Hacker News",
+      "items": [
+        {
+          "title": "Google's DeepCrossAttention achieves comparable model quality up to 3x faster",
+          "link": "https://research.google/blog/supercharging-transformer-residual-connections/"
+        },
+        {
+          "title": "GPT 6.2 Astra Solves a Historical Mystery",
+          "link": "https://generativehistory.substack.com/p/gpt-62-astra-solves-a-historical"
+        },
+        {
+          "title": "Credit card skimming scripts using WebRTC found on popular shopping sites",
+          "link": "https://www.infohawk.com/news/2026-11-27-black-friday-webrtc-skimmer"
+        },
+        {
+          "title": "The Balatro Timeline",
+          "link": "https://localthunk.com/blog/balatro-timeline-3aarh"
+        },
+        {
+          "title": "Convex skills send the user's app idea to a remote server without telling them",
+          "link": "https://github.com/convex/convex-backend-skill/issues/64"
+        },
+        {
+          "title": "9/UX: a Macintosh-inspired desktop for 9front",
+          "link": "https://progrium.github.io/9ux/"
+        },
+        {
+          "title": "Citroën Hydraulic System",
+          "link": "https://www.citroenet.org.uk/miscellaneous/hydraulics/hydraulics-1.html"
+        },
+        {
+          "title": "Cyberpunk Television Shows",
+          "link": "https://shellzine.net/cyberpunk-television/"
+        }
+      ]
+    },
+    {
+      "name": "The Verge",
+      "items": [
+        {
+          "title": "We found 60-odd Black Friday deals we love for $100 or less",
+          "link": "https://www.theverge.com/gadgets/1043445/black-friday-best-cheap-tech-deals-under-100-2026"
+        },
+        {
+          "title": "The absolute best Black Friday deals we’ve found (so far)",
+          "link": "https://www.theverge.com/gadgets/1039190/best-black-friday-2026-deals-tech-gadgets-gift-ideas"
+        },
+        {
+          "title": "Sony’s 1000XM4C headphones are a Black Friday bargain at $198",
+          "link": "https://www.theverge.com/gadgets/1043976/sony-wh1000xm4c-noise-canceling-headphones-black-friday-2026-deal-sale"
+        },
+        {
+          "title": "This purple electric Chinese minivan can go up to 559 miles on a charge",
+          "link": "https://www.theverge.com/transportation/1044706/this-purple-electric-chinese-minivan-can-go-up-to-559-miles-on-a-charge"
+        },
+        {
+          "title": "The best Black Friday deals you can still get on AirPods, Macs, and other Apple gear",
+          "link": "https://www.theverge.com/gadgets/1043935/best-black-friday-apple-deals-2026"
+        }
+      ]
+    },
+    {
+      "name": "TechCrunch",
+      "items": [
+        {
+          "title": "Nvidia hits pause on chip shipments to Southeast Asia",
+          "link": "https://techcrunch.com/2026/11/26/nvidia-hits-pause-on-chip-shipments-to-southeast-asia/"
+        },
+        {
+          "title": "Is Alice Huang a spy or not?",
+          "link": "https://techcrunch.com/2026/11/26/is-alice-huang-a-spy-or-not/"
+        },
+        {
+          "title": "X finally gets parental controls after 20 years",
+          "link": "https://techcrunch.com/2026/11/26/x-finally-gets-parental-controls-after-20-years/"
+        },
+        {
+          "title": "A month with the iPhone Duo has changed how I use my phone",
+          "link": "https://techcrunch.com/2026/11/26/a-month-with-the-iphone-duo-has-changed-how-i-use-my-phone/"
+        },
+        {
+          "title": "Grand Theft Auto VI proves why efficiency isn’t a virtue",
+          "link": "https://techcrunch.com/2026/11/26/as-anthropic-ipos-grand-theft-auto-vi-proves-why-efficiency-isnt-a-virtue/"
+        }
+      ]
+    }
+  ]
+}
