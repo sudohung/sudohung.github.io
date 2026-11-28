@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X · 完整设计方案 v0.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f7fb;--panel:#fff;--ink:#1a1d27;--muted:#5b6172;--line:#e3e6ef;--brand:#4c5bd4;--brand2:#7a5cf0;--accent:#00a37a;--warn:#c2410c;--code-bg:#11141d;--code-ink:#d9e0f0;--radius:14px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#1a1f45 0%,#35286c 45%,#4c5bd4 100%);color:#fff;padding:64px 24px 56px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:840px;color:#d8dcf5;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:24px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13.5px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+  h3{font-size:16px;margin:26px 0 10px}
+  p{margin:10px 0}ul,ol{margin:10px 0;padding-left:22px}li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:18px 20px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:640px}
+  .figure-label{font-size:12px;color:var(--muted);margin:6px 0 -6px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2}section{padding:22px 18px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">Complete Design · v0.3 · 2026-11-28</div>
+    <h1>X 完整设计方案 v0.3</h1>
+    <p>合并最初四层架构、Peer 可靠性 v0.2 与可嵌入 X Core 改造：统一 Session / Turn / Event / Profile / Channel，让本地、Feishu、Peer、API 共用一套内核；远端与本地同构，双向互通。</p>
+    <div class="tags">
+      <span class="tag">Embeddable Core</span>
+      <span class="tag">AgentProfile</span>
+      <span class="tag">Channel Adapter</span>
+      <span class="tag">Peer v0.2</span>
+      <span class="tag">Turn Queue</span>
+      <span class="tag">Outbox / Resume</span>
+      <span class="tag">Tenant Policy</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>目录</h2>
+    <a href="#s1">1. 设计演进</a>
+    <a href="#s2">2. 目标与原则</a>
+    <a href="#s3">3. 总体架构 <span class="pill">图1</span></a>
+    <a href="#s4">4. 部署形态 <span class="pill">图2</span></a>
+    <a href="#s5">5. 领域模型 <span class="pill">图3</span></a>
+    <a href="#s6">6. 连接协议 v2 <span class="pill">图4/5</span></a>
+    <a href="#s7">7. 会话与调度 <span class="pill">图6/7/8</span></a>
+    <a href="#s8">8. 可靠性 <span class="pill">图9/10</span></a>
+    <a href="#s9">9. Channel 适配</a>
+    <a href="#s10">10. 安全与治理</a>
+    <a href="#s11">11. 配置与部署</a>
+    <a href="#s12">12. 可观测与管理</a>
+    <a href="#s13">13. 兼容与迁移</a>
+    <a href="#s14">14. 测试与验收</a>
+    <a href="#s15">15. 风险与决策</a>
+  </nav>
+
+  <main>
+    <section id="s1">
+      <h2><span class="num">01</span>设计演进</h2>
+      <p class="lead">v0.3 不推翻前两版，而是把它们收进同一套内核。</p>
+      <table>
+        <thead><tr><th>版本</th><th>解决的问题</th><th>留下的问题</th></tr></thead>
+        <tbody>
+          <tr><td>v0.1</td><td>四层架构、握手、能力路由、会话透传、Agent 池</td><td>断线补推、重启恢复、治理不足</td></tr>
+          <tr><td>v0.2</td><td>link epoch、outbox/ack/resume、peer 策略、防环、背压</td><td>会话/事件仍是单节点视角，无法内嵌</td></tr>
+          <tr><td>v0.3</td><td>可嵌入 Core、AgentProfile、统一 Session/Turn/Event、Channel、统一调度</td><td>改造成本大，需分阶段迁移</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s2">
+      <h2><span class="num">02</span>目标与原则</h2>
+      <div class="cards">
+        <div class="card"><h4>一个 Core</h4><p>独立节点与宿主内嵌共用；HTTP/Web/Peer 监听由宿主决定。</p></div>
+        <div class="card"><h4>一个会话模型</h4><p>Feishu / Web / Peer / API 都是 Session(channel)。</p></div>
+        <div class="card"><h4>一个事件契约</h4><p>seq + turnId；适配器只负责渲染与重放。</p></div>
+        <div class="card"><h4>一个调度面</h4><p>全局 → Profile → Session 串行；租户配额与优先级。</p></div>
+        <div class="card"><h4>一个协议</h4><p>Peer 协议只在连接层实现，不再有桥接翻译层。</p></div>
+        <div class="card"><h4>轻量</h4><p>单进程 + SQLite，不引入 MQ/注册中心。</p></div>
+      </div>
+      <div class="callout warn">非目标：多跳 relay、并行 fan-out、动态发现、跨节点强一致事务。</div>
+    </section>
+
+    <section id="s3">
+      <h2><span class="num">03</span>总体架构</h2>
+      <p class="figure-label">图 1：Channel → Core → Profile/Instance → opencode</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph HOSTS[接入与宿主]
+        FG[Feishu Gateway] --> FA[FeishuAdapter]
+        WEB[WebSocket / HTTP] --> WA[WebAdapter]
+        API[MCP / HTTP] --> AA[ApiAdapter]
+        RX[远端 X] <--> PA[PeerAdapter]
+    end
+    subgraph CORE[X Core]
+        CM[ChannelManager] --> SM[SessionManager + TurnQueue]
+        CM --> EB[EventBus<br/>seq / turn / replay]
+        SM --> RT[Router]
+        SM --> SCH[Scheduler<br/>tenant quota / priority]
+        RT --> REG[CapabilityRegistry]
+        RT --> SCH
+        SCH --> AP[AgentPool<br/>profile lease]
+        SM --- DB[(SQLite<br/>sessions / turns / outbox / inbox)]
+    end
+    AP --> IR[InstanceRuntime<br/>client / health / breaker]
+    IR --> OC[opencode server + profiles]
+    PA --- PL[PeerLink<br/>epoch / outbox / policy]
+    PL --> SM
+    EB --> FA
+    EB --> WA
+    EB --> PA
+        </div>
+      </div>
+    </section>
+
+    <section id="s4">
+      <h2><span class="num">04</span>部署形态</h2>
+      <p class="figure-label">图 2：Standalone / Embedded / Federated</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    subgraph S1[Standalone]
+        U1[Web / API] --> X1[X 进程<br/>Core + HTTP + Peer]
+        X1 --> O1[opencode]
+    end
+    subgraph S2[Embedded in agentBot]
+        U2[Feishu] --> B2[agentBot<br/>FeishuAdapter]
+        B2 --> X2[X Core]
+        X2 --> O2[opencode profiles]
+        X2 <--> P2[Peer 端口]
+    end
+    subgraph S3[Federated]
+        X3[X-A] <-->|WSS peer| X4[X-B]
+        X4 <-->|WSS peer| X5[X-C]
+    end
+        </div>
+      </div>
+    </section>
+
+    <section id="s5">
+      <h2><span class="num">05</span>领域模型</h2>
+      <p class="figure-label">图 3：Session / Turn / Profile / Peer / Outbox</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    S[Session<br/>channel / externalRef<br/>profileId / status] --> T[Turn<br/>turnId / promptId / seq]
+    S --> E[SessionEvent<br/>seq / turnId / type]
+    S --> PI[pending_interactions<br/>question / permission]
+    S --> P[AgentProfile<br/>model / agent / tags]
+    P --> I[InstanceRuntime<br/>health / client]
+    I --> OC[opencode]
+    S -->|channel = peer| PS[PeerMeta<br/>peerId / remoteSessionId<br/>epoch]
+    S --> O[peer_outbox<br/>seq / ack / retry]
+    O --> R[resume / replay]
+    S --> IN[peer_inbox<br/>幂等去重]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>实体</th><th>关键字段</th></tr></thead>
+        <tbody>
+          <tr><td>AgentProfile</td><td>id, instanceId, baseUrl, model, agent, tags, maxConcurrency, prompt, readOnly</td></tr>
+          <tr><td>Session</td><td>channel, externalRef, profileId, agentSessionId, status, queueState, origin, depth</td></tr>
+          <tr><td>Turn</td><td>turnId, promptId, status, seq 起点, startedAt, finishedAt</td></tr>
+          <tr><td>SessionEvent</td><td>sessionId, turnId, seq, type, payload</td></tr>
+          <tr><td>peer_outbox / inbox</td><td>投递状态、ack、幂等键；不承载会话状态</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s6">
+      <h2><span class="num">06</span>连接协议 v2</h2>
+      <p class="figure-label">图 4：握手、特性协商与 resume</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A
+    participant B as X-B
+    A->>B: hello{protocol min/max, kind, features}
+    B->>A: challenge{nonceA, ttl}
+    A->>B: auth{sealed(nonceB, pubA, nonceA)}
+    B->>B: 解密 + 指纹校验 + nonce 一次性
+    B->>A: auth_ok{sealed(nonceA, nonceB)}
+    Note over A,B: linkId = hash(nonceA, nonceB) = epoch
+    A->>B: resume{sessions, lastAckedSeq}
+    B->>A: resume.state{status, lastSeq, resumable}
+    A->>B: replay(seq > lastAckedSeq)
+        </div>
+      </div>
+      <p class="figure-label">图 5：连接状态机</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> CONNECTING
+    CONNECTING --> CHALLENGE_SENT: hello
+    CHALLENGE_SENT --> AUTH_PENDING: challenge
+    AUTH_PENDING --> ACTIVE: 双向校验 + 特性协商
+    ACTIVE --> DRAINING: drain
+    ACTIVE --> CONNECTING: 心跳超时 / 断线（新 epoch）
+    DRAINING --> CLOSED: bye / 超时
+    AUTH_PENDING --> CLOSED: 校验失败
+    CLOSED --> [*]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>消息</th><th>作用</th></tr></thead>
+        <tbody>
+          <tr><td>session.close / closed</td><td>关闭会话，释放执行态</td></tr>
+          <tr><td>prompt_ack / cancel_ack</td><td>受理与取消确认</td></tr>
+          <tr><td>chunk_ack</td><td>可靠投递与背压</td></tr>
+          <tr><td>resume / resume.state</td><td>重连后交换 seq 状态</td></tr>
+          <tr><td>drain / bye</td><td>优雅下线</td></tr>
+          <tr><td>capability.update</td><td>能力同步（按版本单调）</td></tr>
+        </tbody>
+      </table>
+      <p>幂等：openId / promptId；终态唯一；origin/depth 防环；chunk 合并与软硬水位背压。</p>
+    </section>
+
+    <section id="s7">
+      <h2><span class="num">07</span>会话与调度</h2>
+      <p class="figure-label">图 6：会话主流程（Feishu / Web / Peer 同构）</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant C as ChannelAdapter
+    participant X as X SessionManager
+    participant R as Router / Scheduler
+    participant P as AgentPool
+    participant O as opencode
+    C->>X: ensureSession(externalRef, profile/tags)
+    C->>X: sendMessage(turnId, promptId, text)
+    X->>X: 会话串行队列 + 持久化
+    X->>R: route(text, tags, target)
+    R->>P: acquire(profile)
+    P->>O: prompt(agentSessionId, model)
+    O-->>X: part / tool / permission events
+    X-->>C: chunk/tool/question/permission(seq)
+    X-->>C: done(seq) / error
+    C->>X: answer / approve / cancel
+        </div>
+      </div>
+      <p class="figure-label">图 7：Session / Turn 状态机</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> IDLE
+    IDLE --> QUEUED: 新 turn
+    QUEUED --> RUNNING: 获得 profile 租约
+    RUNNING --> WAITING: question / permission
+    WAITING --> RUNNING: answer / approve
+    RUNNING --> CANCELLING: cancel
+    CANCELLING --> CANCELLED: ack
+    RUNNING --> DONE: done
+    RUNNING --> INTERRUPTED: link/process down
+    INTERRUPTED --> RUNNING: resume
+    INTERRUPTED --> ERROR: resume 失败
+    DONE --> IDLE
+    CANCELLED --> IDLE
+    ERROR --> IDLE
+        </div>
+      </div>
+      <p class="figure-label">图 8：准入、配额与公平调度</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[入站请求] --> B{租户配额可用?}
+    B -->|否| R1[RATE_LIMITED / BUSY]
+    B -->|是| C{会话队列有空位?}
+    C -->|否| R2[QUEUE_TIMEOUT / REJECT]
+    C -->|是| D[入队 turn]
+    D --> E{profile 租约可用?}
+    E -->|否| F[按优先级等待]
+    F --> E
+    E -->|是| G[执行]
+    G --> H{chunk 队列超水位?}
+    H -->|是| I[合并/暂停/降级]
+    H -->|否| J[发送事件]
+    I --> J
+        </div>
+      </div>
+      <ul>
+        <li>三层限流：全局 → Profile → Session 串行。</li>
+        <li>租户：channel + externalRef / peerId；Feishu 交互优先于 peer 批任务。</li>
+        <li>队列策略：queue / steer / reject；超时返回结构化错误。</li>
+      </ul>
+    </section>
+
+    <section id="s8">
+      <h2><span class="num">08</span>可靠性</h2>
+      <p class="figure-label">图 9：outbox / ack / resume 补推</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant S as SessionManager
+    participant O as PeerOutbox
+    participant L as PeerLink
+    participant P as 对端
+    S->>O: append(event, seq)
+    O->>L: send(epoch)
+    L->>P: envelope
+    P-->>L: chunk_ack(seq)
+    L->>O: mark_acked
+    Note over O: 断线期间保留 pending
+    L->>P: resume(lastAckedSeq)
+    P-->>L: resume.state
+    O->>L: replay(seq > lastAckedSeq)
+        </div>
+      </div>
+      <p class="figure-label">图 10：统一重启恢复</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    A[启动] --> B[加载 sessions / turns]
+    B --> C{存在未完成 turn?}
+    C -->|否| Z[完成]
+    C -->|是| D{channel = peer?}
+    D -->|是| E[resume 握手]
+    E --> F{对端可恢复?}
+    F -->|是| G[补推并恢复]
+    F -->|否| H[按策略重开/失败]
+    D -->|否| I{agentSessionId 仍有效?}
+    I -->|是| J[恢复执行]
+    I -->|否| K[用历史消息重放或标 interrupted]
+    G --> L[重发 pending_interactions]
+    J --> L
+    K --> L
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>场景</th><th>行为</th></tr></thead>
+        <tbody>
+          <tr><td>peer 断线</td><td>outbox 保留，resume 后补推，旧 epoch 丢弃</td></tr>
+          <tr><td>peer / X 重启</td><td>resume 或按 openId/promptId 重开；终态唯一</td></tr>
+          <tr><td>本地 agentSession 失效</td><td>历史消息重放上下文，标注已重建</td></tr>
+          <tr><td>Feishu/Web 重连</td><td>按 seq 重放或拉取历史；pending 交互重发</td></tr>
+          <tr><td>取消与 done 竞态</td><td>先到终态生效，迟到事件审计不重复展示</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="s9">
+      <h2><span class="num">09</span>Channel 适配</h2>
+      <table>
+        <thead><tr><th>Channel</th><th>入口</th><th>渲染/回传</th></tr></thead>
+        <tbody>
+          <tr><td>web</td><td>WS /ws</td><td>流式消息、审批、路由卡片</td></tr>
+          <tr><td>feishu</td><td>FeishuAdapter</td><td>卡片、按钮、命令；节流 300ms</td></tr>
+          <tr><td>peer</td><td>PeerLink</td><td>chunk/question/permission/done</td></tr>
+          <tr><td>api</td><td>MCP/HTTP</td><td>同步/轮询/callback</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">agentBot 内嵌后，Feishu 与远端 X 共用同一 Session/Pool/EventBus；旧 AgentRegistry、SessionManager、OpencodeListener、TaskQueue 不再作为执行入口。</div>
+    </section>
+
+    <section id="s10">
+      <h2><span class="num">10</span>安全与治理</h2>
+      <ul>
+        <li>Channel：Feishu 用户/群白名单、命令权限；API/Web Token。</li>
+        <li>Peer：公钥固定、allowlist、requireWss、并发/速率/TTL、能力白名单。</li>
+        <li>Profile：readOnly、允许的 channel/peer 范围。</li>
+        <li>绑定：Web/Admin 仅 127.0.0.1；peer 端口按需公网。</li>
+        <li>审计：traceId + channel + externalRef + peerId。</li>
+      </ul>
+    </section>
+
+    <section id="s11">
+      <h2><span class="num">11</span>配置与部署</h2>
+      <table>
+        <thead><tr><th>配置</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>x.json</td><td>nodeId、监听、并发、TTL、默认 policy</td></tr>
+          <tr><td>profiles</td><td>AgentProfile 列表（替代旧 agents[]）</td></tr>
+          <tr><td>peers.json</td><td>URL、公钥、方向、policy</td></tr>
+          <tr><td>宿主配置</td><td>Feishu 凭证、MCP Token、Admin 端口</td></tr>
+        </tbody>
+      </table>
+      <p>Standalone 默认 8788；Embedded 仅 peer 需对外，Web/Admin 本机；Federated 1 跳。</p>
+    </section>
+
+    <section id="s12">
+      <h2><span class="num">12</span>可观测与管理</h2>
+      <div class="cards">
+        <div class="card"><h4>Peer</h4><p>state、reconnect、RTT、stale epoch、outbox 积压、错误码。</p></div>
+        <div class="card"><h4>Session</h4><p>按 channel/profile/peer 的活跃数、队列、等待时长。</p></div>
+        <div class="card"><h4>Event</h4><p>chunk 延迟、订阅者 lag、重放次数、背压触发。</p></div>
+        <div class="card"><h4>资源</h4><p>opencode 健康、profile 租约、全局并发。</p></div>
+      </div>
+      <p>管理台：会话按 channel/peer/profile 过滤；peer 详情、drain、密钥轮换；Feishu 配置与 profile 切换。</p>
+    </section>
+
+    <section id="s13">
+      <h2><span class="num">13</span>兼容与迁移</h2>
+      <table>
+        <thead><tr><th>阶段</th><th>内容</th><th>验收</th></tr></thead>
+        <tbody>
+          <tr><td>M1</td><td>冻结 schema；抽 Core；AgentProfile；旧 agents[] 兼容</td><td>现有测试全绿</td></tr>
+          <tr><td>M2</td><td>Session/Turn/EventBus/ChannelAdapter；Web 切新契约</td><td>Web 不回归</td></tr>
+          <tr><td>M3</td><td>持久化/统一恢复/pending；peer v0.2 并入</td><td>断网/重启不丢不重</td></tr>
+          <tr><td>M4</td><td>agentBot 内嵌 Core；FeishuAdapter 灰度/双跑</td><td>体验一致可回滚</td></tr>
+          <tr><td>M5</td><td>远端直连内嵌 Core；移除 bridge；MCP façade 迁 X</td><td>双向互调无感</td></tr>
+          <tr><td>M6</td><td>配额/公平调度/管理台指标合并</td><td>可治理可观测</td></tr>
+        </tbody>
+      </table>
+      <p>兼容：v1 peer 降级；旧 agents[] 自动生成 profile；旧 MCP 工具名与返回结构保留。</p>
+    </section>
+
+    <section id="s14">
+      <h2><span class="num">14</span>测试与验收</h2>
+      <table>
+        <thead><tr><th>类型</th><th>覆盖</th></tr></thead>
+        <tbody>
+          <tr><td>Core</td><td>profile 选择、并发、队列、粘性、熔断</td></tr>
+          <tr><td>Session</td><td>状态机、终态唯一、取消竞态、重启恢复</td></tr>
+          <tr><td>Peer</td><td>握手/协商、epoch、outbox/ack/resume、限流、防环</td></tr>
+          <tr><td>Channel</td><td>Web/Feishu/API 渲染与重放、审批</td></tr>
+          <tr><td>混合负载</td><td>Feishu + peer + API 并发、公平性与配额</td></tr>
+          <tr><td>故障</td><td>进程/opencode/链路随机中断、重复/乱序消息</td></tr>
+        </tbody>
+      </table>
+      <div class="callout warn">验收：单机不回归；跨公网断网/重启最终一致；Feishu 与远端共用池；旧 MCP 调用方无感；管理台可按 channel/peer/profile 观测。</div>
+    </section>
+
+    <section id="s15">
+      <h2><span class="num">15</span>风险与决策</h2>
+      <table>
+        <thead><tr><th>项</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>Core 抽离</td><td>最大改造；先冻结接口与 schema，避免二次迁移</td></tr>
+          <tr><td>Profile 模型</td><td>实例健康与 profile 租约边界要清晰</td></tr>
+          <tr><td>事件重放</td><td>seq/turn 设计错误会导致重复卡片</td></tr>
+          <tr><td>本地恢复</td><td>opencode session 失效后的上下文重放策略</td></tr>
+          <tr><td>公平调度</td><td>Feishu 与 peer 的优先级/配额需产品确认</td></tr>
+          <tr><td>MCP 兼容</td><td>role→profile、callback、等待窗口</td></tr>
+          <tr><td>内嵌形态</td><td>目标进程内库；首版可子进程</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<footer>
+  X Complete Design · v0.3 · 2026-11-28 ·
+  <a href="index.html">X 主设计</a> ·
+  <a href="peer-reliability.html">Peer 可靠性 v0.2</a> ·
+  <a href="agentbot-integration.html">agentBot 接入</a> ·
+  <a href="../index.html">站点首页</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
