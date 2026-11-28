@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X · 跨网络 Agent 协作平台完整系统设计</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f5f6fb; --panel:#fff; --ink:#1a1d27; --muted:#5b6172;
+    --line:#e2e5ef; --brand:#4c5bd4; --brand2:#7a5cf0; --accent:#00a37a;
+    --warn:#c2410c; --code-bg:#11141d; --code-ink:#d9e0f0; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Roboto,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7}
+  a{color:var(--brand);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .hero{background:linear-gradient(135deg,#1d254d 0%,#332d74 48%,#4c5bd4 100%);color:#fff;padding:62px 24px 54px}
+  .hero .inner{max-width:1180px;margin:0 auto}
+  .eyebrow{font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+  .hero h1{margin:10px 0 12px;font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.5px}
+  .hero p{margin:0;max-width:860px;color:#d9def7;font-size:16px}
+  .tags{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+  .tag{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);padding:5px 12px;border-radius:999px;font-size:13px;color:#eceeff}
+  .layout{max-width:1180px;margin:0 auto;padding:32px 24px 80px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:36px}
+  nav.toc{position:sticky;top:20px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;max-height:calc(100vh - 40px);overflow:auto}
+  nav.toc h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  nav.toc a{display:block;padding:6px 10px;border-radius:8px;color:var(--muted);font-size:13.5px}
+  nav.toc a:hover{background:#eef0fb;color:var(--brand);text-decoration:none}
+  main{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;margin-bottom:22px;scroll-margin-top:20px}
+  section h2{margin:0 0 6px;font-size:22px;letter-spacing:-.2px}
+  section h2 .num{color:var(--brand);font-weight:700;margin-right:10px;font-variant-numeric:tabular-nums}
+  section .lead{color:var(--muted);margin:0 0 16px;font-size:14.5px}
+  h3{font-size:16px;margin:24px 0 10px}
+  p{margin:10px 0}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:#eef0f8;padding:2px 6px;border-radius:5px;color:#3a3f68}
+  pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:16px 18px;overflow:auto;font-size:13px;line-height:1.65}
+  pre code{background:none;padding:0;color:inherit;font-size:13px}
+  .diagram{background:#0f1220;border-radius:12px;padding:18px;overflow:auto;margin:16px 0}
+  .diagram .mermaid{display:flex;justify-content:center;min-width:680px}
+  .figure-label{font-size:12px;color:var(--muted);margin:6px 0 -8px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#f0f2fa;color:#3a3f68;font-weight:600;font-size:13px}
+  tr:last-child td{border-bottom:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:16px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fbfbfe}
+  .card h4{margin:0 0 6px;font-size:14px;color:var(--brand)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  .callout{border-left:4px solid var(--brand);background:#f2f4ff;border-radius:0 10px 10px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .callout.warn{border-left-color:var(--warn);background:#fff6ef}
+  .pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;background:#e8f6f0;color:var(--accent);font-weight:500;margin-left:8px;vertical-align:middle}
+  .flow-badge{font-family:"JetBrains Mono",monospace;font-size:12px;background:#eef0f8;color:var(--brand);padding:1px 7px;border-radius:5px;display:inline-block;margin:2px}
+  footer{max-width:1180px;margin:0 auto;padding:0 24px 48px;color:var(--muted);font-size:13px}
+  @media (max-width:900px){.layout{grid-template-columns:1fr;padding-top:20px}nav.toc{position:static;order:2;max-height:none}section{padding:22px 18px}.diagram .mermaid{min-width:520px}}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="inner">
+    <div class="eyebrow">System Design Atlas · v1.0 · 2026-11-28</div>
+    <h1>X — 跨网络 Agent 协作平台完整系统设计</h1>
+    <p>从最初的 X 骨架，到 Peer 可靠性、SuperAgent/peer.describe、Peer 智能路由、传输优化、动态 Agent 池与 OpenCode 插件。本文以图为主，配套飞书设计文档阅读。</p>
+    <div class="tags">
+      <span class="tag">Node.js + TypeScript</span>
+      <span class="tag">WebSocket / WSS</span>
+      <span class="tag">RSA-OAEP + AES-GCM</span>
+      <span class="tag">SQLite WAL</span>
+      <span class="tag">SuperAgent</span>
+      <span class="tag">Agent Pool</span>
+      <span class="tag">1 跳联邦</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc">
+    <h2>图谱目录</h2>
+    <a href="#evolution">00. 设计演进</a>
+    <a href="#arch">01. 总体架构</a>
+    <a href="#deploy">02. 部署拓扑</a>
+    <a href="#protocol">03. 协议与帧</a>
+    <a href="#handshake">04. 握手时序</a>
+    <a href="#link-state">05. 链路状态机</a>
+    <a href="#session">06. 会话生命周期</a>
+    <a href="#local-seq">07. 本地执行时序</a>
+    <a href="#remote-seq">08. 跨节点时序</a>
+    <a href="#routing">09. 路由决策</a>
+    <a href="#superagent">10. SuperAgent</a>
+    <a href="#transport">11. 批量与可靠投递</a>
+    <a href="#persistence">12. 持久化 Worker</a>
+    <a href="#agent-pool">13. Agent 池</a>
+    <a href="#access">14. 接入与插件</a>
+    <a href="#data-model">15. 数据模型</a>
+    <a href="#boundaries">16. 边界与取舍</a>
+  </nav>
+
+  <main>
+
+    <section id="evolution">
+      <h2><span class="num">00</span>设计演进</h2>
+      <p class="lead">一条主线：单节点先跑通，再把跨节点可靠性补齐，最后让节点可描述、可智能选择、可高效传输。</p>
+      <div class="cards">
+        <div class="card"><h4>v0.1 骨架</h4><p>信封协议、挑战应答、AgentPool、基础路由、Web/HTTP、单跳联邦。完成 Web → opencode → 流式回显。</p></div>
+        <div class="card"><h4>v0.2 可靠连接</h4><p>链路 epoch、outbox/ack/resume、Peer 策略、防环、断线补推。解决“结果不丢”和治理问题。</p></div>
+        <div class="card"><h4>v0.3 智能化与性能</h4><p>xagent.md、peer.describe、PeerDecisionModule、chunk 批量、MessagePack/compact、Worker 持久化、动态 Agent 池、插件。</p></div>
+      </div>
+      <div class="callout">设计原则：单进程 + SQLite；控制面/执行面分离；会话状态归上行；显式/标签路由优先，LLM 只做远端兜底；X 不托管 opencode。</div>
+    </section>
+
+    <section id="arch">
+      <h2><span class="num">01</span>总体架构</h2>
+      <p class="lead">四层核心 + 两个支撑面：接入层、会话编排层、决策层、Agent 池层；连接协议与持久化贯穿所有层。</p>
+      <p class="figure-label">图 1：X 节点分层与组件依赖</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    subgraph EXT["接入端"]
+        W["Web 浏览器"]
+        PL["OpenCode 插件"]
+        XB["Peer X-B"]
+    end
+    subgraph XA["X-A 节点"]
+        A["AccessServer<br/>WS / HTTP / 静态页"]
+        SM["SessionManager<br/>会话 / 队列 / turn"]
+        RT["Router<br/>能力快照 / 选择"]
+        REG["CapabilityRegistry"]
+        DIR["PeerDirectory"]
+        PD["PeerDecisionModule<br/>x-router"]
+        MAN["XAgentManifest<br/>xagent.md"]
+        POOL["AgentPool<br/>profile / 租约 / 健康"]
+        PM["PeerManager + PeerLink<br/>握手 / 心跳 / epoch"]
+        ST["Store + Persistence<br/>SQLite WAL"]
+    end
+    subgraph INTRA["内网执行面"]
+        O1["opencode-1 :4097"]
+        O2["opencode-2 :4097"]
+    end
+    W -->|"WSS /ws"| A
+    PL -->|"HTTP API"| A
+    A --> SM
+    SM --> RT
+    RT --> REG
+    RT --> DIR
+    RT --> PD
+    SM --> POOL
+    PD --> POOL
+    POOL --> O1
+    POOL --> O2
+    PM <-->|"WSS /peer"| XB
+    PM <--> RT
+    PM <--> SM
+    MAN --> PM
+    SM --> ST
+    POOL --> ST
+    PM --> ST
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>层</th><th>核心职责</th><th>关键实现</th></tr></thead>
+        <tbody>
+          <tr><td>接入层</td><td>Web/HTTP/Peer 入口、鉴权、事件推送</td><td><code>AccessServer</code>、<code>web/</code></td></tr>
+          <tr><td>会话编排层</td><td>会话、turn、串行队列、审批、取消、上下文预算</td><td><code>SessionManager</code></td></tr>
+          <tr><td>决策/路由层</td><td>能力快照、显式/标签/语义路由、路由解释</td><td><code>Router</code>、<code>PeerDecisionModule</code></td></tr>
+          <tr><td>Agent 池层</td><td>profile/instance、健康熔断、并发租约、粘性</td><td><code>AgentPool</code>、<code>OpencodeClient</code></td></tr>
+          <tr><td>连接/协议层</td><td>握手、链路状态、心跳重连、去重、帧编码</td><td><code>PeerManager</code>、<code>PeerLink</code></td></tr>
+          <tr><td>持久化/支撑</td><td>SQLite、outbox/inbox、配置、动态能力广播</td><td><code>Store</code>、<code>WorkerPersistence</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="deploy">
+      <h2><span class="num">02</span>部署拓扑</h2>
+      <p class="lead">X 是唯一公网入口；opencode 留在内网；多个 X 通过 /peer 组成 1 跳联邦。</p>
+      <p class="figure-label">图 2：单节点与双节点部署</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    B["浏览器 / OpenCode 插件"] -->|"HTTPS / WSS"| N["Nginx / Caddy<br/>TLS 终止"]
+    N -->|"8788"| XA["X-A<br/>AccessServer + Core"]
+    XA -->|"HTTP 4097"| O1["opencode-1"]
+    XA -->|"HTTP 4097"| O2["opencode-2"]
+    XB["X-B"] <-->|"WSS /peer"| N
+    XA --- C["config bind mount<br/>x.json / profiles / peers / keys"]
+    XA --- D["x-data volume<br/>x.db"]
+    XB --- O3["B 的 opencode 池"]
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>单节点</h4><p>一个 X 进程 + N 个 opencode；config、keys、SQLite 可备份。</p></div>
+        <div class="card"><h4>Docker Compose</h4><p>x:8788 + opencode-1/2 内网；只有 x 暴露端口；restart=unless-stopped。</p></div>
+        <div class="card"><h4>联邦</h4><p>静态 Peer 配置，公钥指纹固定；方向 outbound/inbound/both；1 跳。</p></div>
+      </div>
+    </section>
+
+    <section id="protocol">
+      <h2><span class="num">03</span>协议与帧</h2>
+      <p class="lead">控制消息保持 JSON envelope；高吞吐流式数据可选 MessagePack/compact 帧。</p>
+      <p class="figure-label">图 3：消息分类与编码选择</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    E["Envelope v2<br/>id / type / from / to / traceId / epoch / origin / depth"]
+    E --> H["握手<br/>hello / challenge / auth / auth_ok"]
+    E --> C["能力与描述<br/>capability.update / peer.describe"]
+    E --> S["会话<br/>session.open / accept / prompt / cancel"]
+    E --> F["流式与控制<br/>chunk / tool / question / permission / done / error"]
+    E --> R["可靠投递<br/>chunk_ack / prompt_ack / resume / replayed outbox"]
+    F --> Q{"chunk.batch 或 chunk_ack?"}
+    Q -->|"双方支持 msgpack"| MP["Frame v3<br/>MessagePack 数组"]
+    Q -->|"仅支持 compact"| CP["Frame v3<br/>短字段 JSON"]
+    Q -->|"都不支持"| JSON["普通 JSON Envelope"]
+        </div>
+      </div>
+      <ul>
+        <li>信封上限 1MB；<code>to</code> 必须是本节点，禁止 1 跳之外转发。</li>
+        <li><code>id</code> 去重、<code>traceId</code> 贯穿日志、<code>epoch</code> 隔离旧链路、<code>origin/depth</code> 防环。</li>
+        <li>控制消息始终可读、可调试；流式帧才做紧凑编码。</li>
+      </ul>
+    </section>
+
+    <section id="handshake">
+      <h2><span class="num">04</span>握手时序</h2>
+      <p class="lead">挑战应答 + RSA-OAEP 包裹 AES-256-GCM 会话密钥 + 公钥指纹固定。</p>
+      <p class="figure-label">图 4：Peer 建连与身份验证</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A 主动方
+    participant B as X-B 被连方
+    A->>B: hello(nodeId, protocols, features)
+    B->>A: challenge(nonceA, TTL, features)
+    Note over A: 生成 nonceB<br/>RSA-OAEP 包裹 AES-256-GCM key
+    A->>B: auth(sealed: nonceB / pubKeyA / nonceA)
+    Note over B: 解封并校验 nonceA 一次性<br/>校验公钥指纹与配置一致
+    B->>A: auth_ok(sealed: nonceA / nonceB)
+    Note over A: 校验双方 nonce 与私钥持有
+    Note over A,B: ACTIVE<br/>epoch = hash(nonceA, nonceB)
+    A->>B: peer.describe(summary, hash, version)
+    B->>A: peer.describe.ack(hash)
+    B->>A: peer.describe(summary, hash, version)
+    A->>B: peer.describe.ack(hash)
+    A->>B: capability.update(profiles)
+    B->>A: capability.update(profiles)
+    Note over A,B: READY，允许 session.open / prompt
+        </div>
+      </div>
+      <div class="callout warn"><strong>安全要点</strong>：RSA 不能直接加密变长业务数据；实际只包裹 AES-GCM key。nonce 一次性、30s TTL、Peer 级限频；指纹不匹配立即断开。</div>
+    </section>
+
+    <section id="link-state">
+      <h2><span class="num">05</span>链路状态机</h2>
+      <p class="lead">每条 Peer 链路独立状态；重连即新 epoch，旧消息被丢弃。</p>
+      <p class="figure-label">图 5：PeerLink 生命周期</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> CONNECTING
+    CONNECTING --> CHALLENGE_SENT: hello
+    CHALLENGE_SENT --> AUTH_PENDING: challenge / auth
+    AUTH_PENDING --> ACTIVE: auth_ok 且双向校验通过
+    AUTH_PENDING --> CLOSED: 校验失败 / 超时 / 指纹不符
+    ACTIVE --> DRAINING: 主动下线 / drain
+    ACTIVE --> CONNECTING: 3×心跳超时 / 断线退避
+    DRAINING --> CLOSED
+    CLOSED --> CONNECTING: 重连
+        </div>
+      </div>
+      <ul>
+        <li>心跳 15s，连续 3 次无 pong 断开；指数退避 1s→30s，带抖动。</li>
+        <li>同一 Peer 只保留一条 ACTIVE 链路；重复链路被拒绝。</li>
+        <li>能力协商取双方 features 交集；老 Peer 自动降级。</li>
+      </ul>
+    </section>
+
+    <section id="session">
+      <h2><span class="num">06</span>会话生命周期</h2>
+      <p class="lead">一个会话串行执行多个 turn；审批/提问会进入 waiting，取消/断线进入终态或 interrupted。</p>
+      <p class="figure-label">图 6：Session 状态机</p>
+      <div class="diagram">
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> routing: create session
+    routing --> waiting: 路由需要用户指定
+    routing --> queued: 已选本地/远端执行者
+    queued --> running: 获得租约 / 对端 accept
+    running --> waiting: question / permission
+    waiting --> running: answer / approve
+    running --> done: done
+    running --> error: error / timeout
+    running --> cancelled: cancel / cancel_ack
+    running --> interrupted: peer closed / shutdown
+    done --> [*]
+    error --> [*]
+    cancelled --> [*]
+    interrupted --> [*]
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>串行队列</h4><p>每会话默认最多 16 个待执行项；队列满返回 QUEUE_TIMEOUT，不杀当前 turn。</p></div>
+        <div class="card"><h4>上下文预算</h4><p>默认 32k token；超限保留 system + 最近消息，旧内容折叠摘要。</p></div>
+        <div class="card"><h4>运行时状态</h4><p>本地 opencode session 可复用；进程重启后运行中会话标记 interrupted。</p></div>
+      </div>
+    </section>
+
+    <section id="local-seq">
+      <h2><span class="num">07</span>本地执行时序</h2>
+      <p class="lead">本地路由优先；拿到租约后复用或创建 opencode session，SSE 事件转成统一会话事件。</p>
+      <p class="figure-label">图 7：Web/HTTP → 本地 opencode</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant C as Web / HTTP
+    participant S as SessionManager
+    participant R as Router
+    participant P as AgentPool
+    participant D as SQLite
+    participant O as OpencodeClient
+    C->>S: 发送消息
+    S->>D: 写入 user message / turn
+    S->>R: route(text, tags, target)
+    R-->>S: local agent + reason
+    S->>P: acquire(profileId, sessionId)
+    P-->>S: lease(client, model, agent)
+    S->>O: createSession 或复用 agentSessionId
+    S->>O: prompt
+    loop SSE 流式事件
+        O-->>S: message.part.updated / tool / permission / question
+        S->>D: 记录事件与消息
+        S-->>C: chunk / tool / status
+    end
+    O-->>S: session.idle
+    S->>D: assistant message + done
+    S-->>C: done
+    S->>P: release lease
+        </div>
+      </div>
+    </section>
+
+    <section id="remote-seq">
+      <h2><span class="num">08</span>跨节点执行时序</h2>
+      <p class="lead">上行 X 负责会话与上下文；远端 X 只执行并回传带 seq 的事件；ack 支撑断线补推。</p>
+      <p class="figure-label">图 8：X-A 将任务转发到 X-B</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A 上行
+    participant B as X-B 执行
+    participant P as Pool / Lease
+    participant O as opencode
+    A->>B: session.open(context, budget, tags, origin, depth)
+    B->>B: ready / policy / depth / 幂等检查
+    B->>P: 选择 profile 并 acquire
+    P-->>B: lease
+    B->>O: createSession
+    B-->>A: session.accept(remoteSessionId, features)
+    A->>B: prompt(turnId, promptId)
+    B->>B: 入队 / prompt_ack
+    B->>O: prompt
+    loop 流式执行
+        O-->>B: SSE 事件
+        B-->>A: chunk.batch(seq) 或 chunk
+        A-->>B: chunk_ack(seq)
+    end
+    B-->>A: done(seq, text)
+    A->>A: 写入 assistant / 结束 turn
+        </div>
+      </div>
+      <div class="callout">会话状态归上行：A 决定路由、上下文与最终状态；B 只持有 remoteSessionId 和本次执行态。断线后 A 用 outbox/resume 补推。</div>
+    </section>
+
+    <section id="routing">
+      <h2><span class="num">09</span>路由决策</h2>
+      <p class="lead">显式 target → 本地标签 → 远端标签 → 语义选择 → 标签重叠兜底 → 回问用户；每一步可解释。</p>
+      <p class="figure-label">图 9：Route 决策流水线</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    S["消息 + tags / target"] --> T{"显式 target 可执行?"}
+    T -->|是| E1["直发 local 或 peer"]
+    T -->|否| L{"本地 tag 精确匹配?"}
+    L -->|是| E2["本地最小负载"]
+    L -->|否| R{"远端 ready 且 tag 精确?"}
+    R -->|唯一 Peer| E3["远端执行"]
+    R -->|多个 Peer| PD["PeerDecisionModule"]
+    R -->|无| D{"有 peer.describe?"}
+    D -->|是| PD
+    D -->|否| F{"允许 tag 重叠回退?"}
+    PD -->|"置信度 ≥ 阈值"| E3
+    PD -->|"低置信度 / 无结果"| F
+    F -->|是| E4["标签重叠 + 负载"]
+    F -->|否| U["回问用户 / 指定 target"]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>优先级</th><th>规则</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>显式 target</td><td><code>local:id</code> / <code>peer:id</code>；不存在降级</td></tr>
+          <tr><td>2</td><td>本地 tags</td><td>全标签匹配，本地负载升序</td></tr>
+          <tr><td>3</td><td>远端 tags</td><td>只看 ready Peer；唯一直接选</td></tr>
+          <tr><td>4</td><td>peer.describe</td><td>多 Peer 时交给 x-router 语义选择</td></tr>
+          <tr><td>5</td><td>tag 重叠</td><td>LLM 不可用/低置信度时兜底</td></tr>
+          <tr><td>6</td><td>用户</td><td>返回 kind=user，Web 展示原因</td></tr>
+        </tbody>
+      </table>
+      <p><strong>路由解释</strong>会返回 candidates、reason、confidence、decisionSource，直接进入 Web 的 route 卡片。</p>
+    </section>
+
+    <section id="superagent">
+      <h2><span class="num">10</span>SuperAgent 与 peer.describe</h2>
+      <p class="lead">xagent.md 描述整个 X 节点；握手后先交换 summary，未 ready 不接受业务会话。</p>
+      <p class="figure-label">图 10：xagent.md 加载、降级与热更新</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    F["xagent.md"] --> P["解析 frontmatter"]
+    P --> V{"Schema 校验通过?"}
+    V -->|是| H["规范化 + hash + version"]
+    V -->|否| FB["fallback：nodeId + profile tags"]
+    H --> D["PeerDescriptor summary"]
+    FB --> D
+    D --> W["watchFile 热更新"]
+    W --> B["broadcastDescribe 给 ready Peer"]
+    D --> S["peer_descriptors 持久化"]
+        </div>
+      </div>
+      <p class="figure-label">图 11：describe 交换与 ready gating</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant A as X-A
+    participant B as X-B
+    Note over A,B: 握手 ACTIVE
+    A->>B: peer.describe(version, hash, summary)
+    B->>A: peer.describe.ack(hash)
+    B->>A: peer.describe(version, hash, summary)
+    A->>B: peer.describe.ack(hash)
+    A->>B: capability.update(profiles)
+    B->>A: capability.update(profiles)
+    Note over A,B: READY
+    A->>B: session.open
+    Note over B: 未 ready 则返回 PEER_NOT_READY
+        </div>
+      </div>
+      <div class="callout">描述只共享 summary，正文不外发；LLM 提示词把 descriptor 当作不可信数据，降低描述注入风险。x-router 是 internal/readOnly profile，不广播、不参与普通路由。</div>
+    </section>
+
+    <section id="transport">
+      <h2><span class="num">11</span>批量传输与可靠投递</h2>
+      <p class="lead">100ms / 64KB 聚合流式片段；控制事件先 flush；outbox + ack + resume 保证断线后结果可补。</p>
+      <p class="figure-label">图 12：chunk 批量、ack 与补推</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant S as 发送端 SessionManager
+    participant C as ChunkBatcher
+    participant DB as peer_outbox
+    participant L as PeerLink
+    participant R as 接收端
+    loop 100ms / 64KB / 控制事件
+        S->>C: append(text / reasoning)
+        C->>C: 合并 segments
+        C->>DB: append chunk.batch(seq)
+        C->>L: send(msgpack / compact / JSON)
+        L->>R: chunk.batch(seq)
+        R-->>L: chunk_ack(seq)
+        L-->>DB: ack watermark
+    end
+    S->>DB: append done(critical)
+    S->>L: send done
+    Note over L,R: 断线
+    S->>R: resume(lastAckedSeq)
+    R-->>S: resume.state(lastSeq)
+    S->>R: replay pending outbox
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>批量</h4><p>默认 100ms/64KB，队列上限 4MB；tool/question/permission/done 前强制 flush。</p></div>
+        <div class="card"><h4>编码</h4><p>chunk.batch/chunk_ack 优先 MessagePack，其次 compact，最后 JSON。</p></div>
+        <div class="card"><h4>可靠</h4><p>支持 ack 的 Peer 先落 outbox；接收端 seq 去重；done/error 关键事件主连接直写。</p></div>
+        <div class="card"><h4>兼容</h4><p>老 Peer 不支持 ack 时走旧路径，不具备断线期间完整补推保证。</p></div>
+      </div>
+    </section>
+
+    <section id="persistence">
+      <h2><span class="num">12</span>持久化 Worker</h2>
+      <p class="lead">把 outbox/ack/inbound/attempt 批量写入 SQLite，避免每个 chunk 都阻塞主线程。</p>
+      <p class="figure-label">图 13：WorkerPersistence 数据流</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart TB
+    E["Session events"] --> M["WorkerPersistence 内存队列"]
+    M -->|"500ms tick / flush"| W["Worker: SQLite"]
+    W --> O[("peer_outbox")]
+    W --> A[("peer_ack_watermark")]
+    W --> I[("peer_inbound_seq")]
+    W --> X["清理 acked / WAL checkpoint"]
+    CR["done / error 关键事件"] --> D["主连接直接写 SQLite"]
+    D --> S["再发送"]
+        </div>
+      </div>
+      <ul>
+        <li>启动时从 SQLite 恢复 pending、ack watermark、inbound seq。</li>
+        <li>已 ack 行默认保留 1 小时，每 30s 清理，单次最多 5000 条。</li>
+        <li>Worker 崩溃/退出会记录错误；关键终态仍由主连接保证先落盘。</li>
+      </ul>
+    </section>
+
+    <section id="agent-pool">
+      <h2><span class="num">13</span>Agent 池</h2>
+      <p class="lead">Profile 是调度单元，instanceId 对应真实 opencode；多个 profile 可共享一个 runtime。</p>
+      <p class="figure-label">图 14：租约获取与释放</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant S as SessionManager
+    participant P as AgentPool
+    participant R as Runtime
+    participant O as opencode
+    S->>P: acquire(profileId / tags / sessionId)
+    P->>P: 过滤 healthy + breaker allow
+    P->>P: 全局 Semaphore
+    P->>P: profile Semaphore
+    P->>R: 取共享 client
+    P-->>S: lease(profileId, instanceId, client)
+    S->>O: createSession / prompt
+    S->>P: release
+    P->>P: release profile + global
+        </div>
+      </div>
+      <p class="figure-label">图 15：动态 profile 管理</p>
+      <div class="diagram">
+        <div class="mermaid">
+flowchart LR
+    U["Web Agent 池 / API"] --> V["校验 id / URL / 并发"]
+    V --> A["upsert profile"]
+    A --> B{"active 或 queued?"}
+    B -->|是且改关键字段| E["409 busy"]
+    B -->|否| R["更新 Pool / Runtime"]
+    R --> S["写 config/profiles.json"]
+    S --> C["替换本地 capabilities"]
+    C --> P["广播 capability.update"]
+        </div>
+      </div>
+      <ul>
+        <li>健康 15s 探测；连续 3 次失败熔断 30s。</li>
+        <li>共享 instance 不允许配置不同 baseUrl/token；失败回滚。</li>
+        <li>Token 不返回给前端；<code>profiles.json</code> 0600 且不提交 Git。</li>
+      </ul>
+    </section>
+
+    <section id="access">
+      <h2><span class="num">14</span>接入与插件</h2>
+      <p class="lead">Web、HTTP、Peer 是三个入口；OpenCode 插件是 X 的薄客户端。</p>
+      <p class="figure-label">图 16：OpenCode → X 任务调用</p>
+      <div class="diagram">
+        <div class="mermaid">
+sequenceDiagram
+    participant O as OpenCode Agent
+    participant P as X Plugin
+    participant X as X HTTP API
+    participant S as SessionManager
+    O->>P: x_run(text, tags, target)
+    P->>X: POST /api/sessions
+    P->>X: POST /api/sessions/:id/messages
+    X->>S: sendMessage + route
+    S-->>X: decision / running
+    X-->>P: 202 + decision
+    loop wait=true 或后续 x_result
+        P->>X: GET /api/sessions/:id
+        X-->>P: status / messages
+    end
+    P-->>O: 最终文本 / waiting / sessionId
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><h4>Web/WS</h4><p>实时事件、审批、路由卡、Peer/Agent 池管理。</p></div>
+        <div class="card"><h4>HTTP API</h4><p>会话、消息、能力、Peer、管理、指标。</p></div>
+        <div class="card"><h4>插件工具</h4><p>x_status / x_agents / x_run / x_send / x_result / x_cancel / x_approve / x_answer / x_peers。</p></div>
+      </div>
+    </section>
+
+    <section id="data-model">
+      <h2><span class="num">15</span>数据模型</h2>
+      <p class="lead">SQLite WAL 单文件；DAO 隔离 SQL，Worker 与主进程共享 schema。</p>
+      <p class="figure-label">图 17：核心表关系</p>
+      <div class="diagram">
+        <div class="mermaid">
+erDiagram
+    SESSIONS ||--o{ TURNS : has
+    SESSIONS ||--o{ MESSAGES : contains
+    SESSIONS ||--o{ PENDING_INTERACTIONS : waits_on
+    SESSIONS ||--o{ PEER_OUTBOX : emits
+    PEERS ||--o{ CAPABILITIES : advertises
+    PEERS ||--o{ PEER_DESCRIPTORS : describes
+    PEERS ||--o{ PEER_OUTBOX : delivers
+    PEERS ||--o{ PEER_INBOX : dedupes
+    PEERS ||--o{ PEER_ACK_WATERMARK : tracks_ack
+    PEERS ||--o{ PEER_INBOUND_SEQ : tracks_inbound
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>表组</th><th>表</th><th>关键作用</th></tr></thead>
+        <tbody>
+          <tr><td>会话</td><td><code>sessions</code>、<code>turns</code>、<code>messages</code></td><td>会话状态、turn 生命周期、对话历史</td></tr>
+          <tr><td>可靠投递</td><td><code>peer_outbox</code>、<code>peer_ack_watermark</code>、<code>peer_inbound_seq</code></td><td>出站补推、ack 水位、入站去重</td></tr>
+          <tr><td>能力/描述</td><td><code>capabilities</code>、<code>peer_descriptors</code>、<code>peers</code></td><td>本地/远端能力、SuperAgent 摘要、Peer 状态</td></tr>
+          <tr><td>交互/事件</td><td><code>pending_interactions</code>、<code>pending_events</code>、<code>peer_inbox</code></td><td>审批/提问、待投递事件、幂等结果</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="boundaries">
+      <h2><span class="num">16</span>边界与取舍</h2>
+      <div class="cards">
+        <div class="card"><h4>保持单机轻量</h4><p>进程内状态 + SQLite，不引入 Redis/MQ/注册中心；联邦只是把远端 X 当特殊执行者。</p></div>
+        <div class="card"><h4>可靠优先</h4><p>outbox/ack/resume 保证结果补推；但旧 Peer 无 ack 时降级。</p></div>
+        <div class="card"><h4>可解释路由</h4><p>显式/标签优先，LLM 只做远端多候选；返回候选与原因。</p></div>
+        <div class="card"><h4>明确不做</h4><p>多跳、fan-out/聚合、动态 Peer 发现、多租户 RBAC、K8s、托管 opencode。</p></div>
+      </div>
+      <div class="callout warn">
+        <strong>当前实现边界</strong>：Feishu 只有 channel 字段无独立适配器；进程重启不续跑正在执行的 opencode 会话；<code>maxHop</code> 配置保留，1 跳由协议地址约束保证。
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  X System Design Atlas · v1.0 · 2026-11-28 ·
+  <a href="index.html">返回 X 设计索引</a> ·
+  <a href="design-v0.3.html">原 v0.3 设计</a> ·
+  <a href="peer-reliability.html">Peer 可靠性</a> ·
+  <a href="superagent-peer-routing.html">SuperAgent 路由</a> ·
+  <a href="transport-performance.html">传输性能</a>
+</footer>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    fontFamily: 'Roboto, "PingFang SC", sans-serif',
+    themeVariables: {
+      background: '#0f1220',
+      primaryColor: '#242a45',
+      primaryTextColor: '#e8ecff',
+      primaryBorderColor: '#4c5bd4',
+      lineColor: '#7d86c9',
+      secondaryColor: '#2a2140',
+      tertiaryColor: '#15201f',
+      fontSize: '14px',
+      clusterBkg: '#141830',
+      clusterBorder: '#39406b',
+      edgeLabelBackground: '#0f1220',
+      actorBkg: '#242a45',
+      actorBorder: '#4c5bd4',
+      actorTextColor: '#e8ecff',
+      signalColor: '#9aa3d8',
+      signalTextColor: '#d9dff5',
+      noteBkgColor: '#2a2140',
+      noteTextColor: '#e3e6ff',
+      noteBorderColor: '#5c4fa0',
+      labelBoxBkgColor: '#1a1f38',
+      labelBoxBorderColor: '#4c5bd4',
+      labelTextColor: '#e8ecff'
+    }
+  });
+</script>
+</body>
+</html>
